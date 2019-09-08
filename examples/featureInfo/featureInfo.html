@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CesiumExt.featureInfo.ImageryLayerFeatureInfo Examples</title>
+	<link rel="stylesheet" href="https://cesiumjs.org/releases/1.61/Build/Cesium/Widgets/widgets.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
+	<!-- Style our Cesium app. -->
+	<link rel="stylesheet" href="index.css" media="screen">
+</head>
+
+<body>
+    <div id='description'>
+        <p>
+            This example shows how to use <code><b>CesiumExt.featureInfo.ImageryLayerFeatureInfo</b></code> to show the properties
+            from the features present in one or more Imagery Layers:
+        </p>
+		<ul>
+            <li>Each Change in the Grid Panel will be reflected in <code><b>Cesium.DataSource</b></code> and <code><b>Cesium.DataSourceCollection</b></code> instances.</li>
+			<li>And each change on <code><b>Cesium.DataSource</b></code> and <code><b>Cesium.DataSourceCollection</b></code> will also be reflected in the Grid Panel.</li>
+        </ul>
+        <p>
+            Have a look at <a href="featureInfo.js">featureInfo.js</a> to see how this is done.
+        </p>
+    </div>
+	
+    <script src="https://cesiumjs.org/releases/1.61/Build/Cesium/Cesium.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
+    <script>
+		// REMARK: to create your application, add your ion access token from cesium.com/ion/
+		// If you don't have the token, please subscribe to cesium.com/ion/ and a default token will be provided for you.
+		Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NjM0MzhmNi1kMTUwLTRhM2ItYjc0YS02Y2FkZDFlN2ViNzciLCJpZCI6MTUyMTMsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1Njc0MTA4NzV9.q5j6kYHibtMUXpEJez2pgbr84tBFbDZabA4hEem_Seo'
+		Ext.Loader.setConfig({
+            enabled: true,
+            paths: {
+                'CesiumExt': '../../src/'
+            }
+        });
+    </script>
+    <script src="featureInfo.js"></script>
+</body>
+</html>
