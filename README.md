@@ -1,2 +1,2 @@
 # cesiumext1
-Javascript opensource framework for 3D models using CesiumJS and ExtJS
+Javascript OpenSource Framework for 3D Maps using CesiumJS and ExtJS
