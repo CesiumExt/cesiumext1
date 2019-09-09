@@ -31,7 +31,6 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 	config: {
 		viewer: null,
 		message: 'Click Position to Select Features',
-		imageryLayers: null
 	},
 	
 	
@@ -43,13 +42,10 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 		var me = this;
 		if(!config.viewer)
 			Ext.raise('viewer must be provided.');
-		if(!config.imageryLayers)
-			Ext.raise('imageryLayers must be provided.');
 		if(!config.message)
 			config.message = me.config.message;
 		me.initConfig(config);
 		me.callParent([config]);
-		console.log(me.viewer);
     },
 	
 	/**
@@ -74,46 +70,40 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 			{
 				var me = context;
 				var windowPos = data.windowPosition;
-				
-				//create panel
-				var accordion = Ext.create('Ext.Panel', {
-					layout: 'accordion',
-					items: []
-				});
-				//create and show popup window
-				var popupWindow = Ext.create('Ext.window.Window', {
-					title: "Feature Info",
-					height: 600,
-					width: 450,
-					scrollable: true,
-					constrainHeader: true,
-					items: [accordion]
-				});
-				popupWindow.show();
-				
+				//send the feature info request to imagery layers
 				var pickRay = me.getViewer().camera.getPickRay(windowPos);
 				var featuresPromise = me.getViewer().imageryLayers.pickImageryLayerFeatures(pickRay, me.getViewer().scene);
 				
-				
+				//get the response for the feature info request and load in the property grid
 				if (!Cesium.defined(featuresPromise)) {
-					console.log('No features picked.');
+					Ext.Msg.alert('Message', 'No features picked.!!!', Ext.emptyFn);
 				}
 				else {
 					Cesium.when(featuresPromise, function(features) {
-						console.log('Number of features: ' + features.length);
 						if (features.length > 0) {
-							console.log('First feature properties: ' + features[0].properties);
-							console.log('First feature layer: ' +  features[0].imageryLayer.imageryProvider.layers);
+							//create an accordion panel
+							var accordion = Ext.create('Ext.Panel', {
+								layout: 'accordion',
+								items: []
+							});
+							//create and show popup window
+							var popupWindow = Ext.create('Ext.window.Window', {
+								title: "Feature Info",
+								height: 600,
+								width: 450,
+								scrollable: true,
+								constrainHeader: true,
+								items: [accordion]
+							});
+							popupWindow.show();
 							
-							
-							
-						
 							//iterate over all the features to show the properties for each feature
 							Ext.each(features, function(feature) {
 								var featGrid = Ext.create('Ext.grid.property.Grid', {
 									title: feature.imageryLayer.imageryProvider.layers,
 									source: feature.properties,
-									sortableColumns: false,
+									sortableColumns: true,
+									collapsible: true
 								});
 								accordion.add(featGrid);
 							});
@@ -124,10 +114,9 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 						}
 					});
 				}
-				
+				//unregister and destroy the interaction component
 				getPosInteraction.un('positionRetrieved', showFeatureInfoBox);
 				getPosInteraction.destroy();
-				console.log('FeatureInfoBox:' + windowPos);
 			}
 		});
 	},

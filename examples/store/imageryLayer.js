@@ -43,6 +43,11 @@ Ext.application({
 		mapComponent.on('viewercreated', function(viewer) {
 			var imageryLayers = viewer.imageryLayers;
 			imageryLayers.removeAll();
+			//create store
+			imageryLayerStore = Ext.create('CesiumExt.data.store.ImageryLayerStore', {
+				cesiumImageryLayerCollection: imageryLayers
+			});
+			//create grid panel
 			createImageryLayerGridPanel();
 		});
 		
@@ -50,6 +55,7 @@ Ext.application({
 		toolbar = Ext.create('Ext.toolbar.Toolbar', {
 			region : 'north',
 			items: [ 
+				/*
 				{
 					text : 'Open',
 					menu : 
@@ -60,6 +66,7 @@ Ext.application({
 						}
 					]
 				},
+				*/
 				{
 					text : 'ImageryLayer',
 					menu : 
@@ -85,7 +92,7 @@ Ext.application({
 							handler: createGoogleEarthEnterpriseMapsImageryLayer
 						},
 						{
-							text : 'Add New Mapbox Imagery Layer',
+							text : 'Add New Mapbox Streets Imagery Layer',
 							handler: createMapboxImageryLayer
 						},
 						{
@@ -170,147 +177,277 @@ Ext.application({
 			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
 			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 			
-			/*
-			//Add layer
-			viewer.imageryLayers.addImageryProvider(new Cesium.ArcGisMapServerImageryProvider({
-				url : 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
-			}));
-			*/
-			
 		}
 		
 		function createOpenStreetMapImageryLayer() {
 			var viewer = mapComponent.getViewer();
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(Cesium.createOpenStreetMapImageryProvider({
-				url : 'https://a.tile.openstreetmap.org/'
-			}));
+			var data = {
+				name: 'OpenStreetMap',
+				//data.iconUrl = '',
+				tooltip: 'OpenStreetMap Imagery',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = Cesium.createOpenStreetMapImageryProvider({
+						url : 'https://a.tile.openstreetmap.org/'
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		function createTileMapServiceImageryLayer() {
 			var viewer = mapComponent.getViewer();
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(Cesium.createTileMapServiceImageryProvider({
-			   url: '../images/cesium_maptiler/Cesium_Logo_Color',
-			   fileExtension: 'png',
-			   maximumLevel: 4,
-			   rectangle: new Cesium.Rectangle(
-				   Cesium.Math.toRadians(-120.0),
-				   Cesium.Math.toRadians(20.0),
-				   Cesium.Math.toRadians(-60.0),
-				   Cesium.Math.toRadians(40.0))
-			}));
+			var data = {
+				name: 'Cesium Logo',
+				//data.iconUrl = '',
+				tooltip: 'Tile MapService Imagery for Cesium Logo',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider =Cesium.createTileMapServiceImageryProvider({
+					   url: '../images/cesium_maptiler/Cesium_Logo_Color',
+					   fileExtension: 'png',
+					   maximumLevel: 4,
+					   rectangle: new Cesium.Rectangle(
+						   Cesium.Math.toRadians(-120.0),
+						   Cesium.Math.toRadians(20.0),
+						   Cesium.Math.toRadians(-60.0),
+						   Cesium.Math.toRadians(40.0))
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		function createGoogleEarthEnterpriseImageryLayer() {
 			var viewer = mapComponent.getViewer();
-			var metadata = new Cesium.GoogleEarthEnterpriseMetadata('http://www.earthenterprise.org/3d');
-			var provider = new Cesium.GoogleEarthEnterpriseImageryProvider({
-				metadata : metadata
-			});
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(provider);
+			var data = {
+				name: 'GoogleEarth Enterprise Imagery',
+				//data.iconUrl = '',
+				tooltip: 'GoogleEarth Enterprise Imagery Layer',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var metadata = new Cesium.GoogleEarthEnterpriseMetadata('http://www.earthenterprise.org/3d');
+					var provider = new Cesium.GoogleEarthEnterpriseImageryProvider({
+						metadata : metadata
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		function createGoogleEarthEnterpriseMapsImageryLayer() {
 			var viewer = mapComponent.getViewer();
-			var provider = new Cesium.GoogleEarthEnterpriseMapsProvider({
-				url : 'https://earth.localdomain',
-				channel : 1008
-			});
+			
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(provider);
+			var data = {
+				name: 'GoogleEarth Enterprise Maps',
+				//data.iconUrl = '',
+				tooltip: 'GoogleEarth Enterprise Maps Layer',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.GoogleEarthEnterpriseMapsProvider({
+						url : 'https://earth.localdomain',
+						channel : 1008
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		function createMapboxImageryLayer() {
 			var viewer = mapComponent.getViewer();
 			
-			var provider = new Cesium.MapboxImageryProvider({
-				mapId: 'mapbox.streets',
-				//remark: create your own token in the mapbox web page
-				accessToken: 'pk.eyJ1IjoiY2VzaXVtZXh0IiwiYSI6ImNrMDZza3BzaDNibGozbnBrdmlxamU1c3EifQ.z-Vii2yB3-6nSSFVvaodNA'
-			});
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(provider);
+			var data = {
+				name: 'MapBox Streets',
+				//data.iconUrl = '',
+				tooltip: 'MapBox Streets through Cesium.MapboxImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.MapboxImageryProvider({
+						mapId: 'mapbox.streets',
+						//remark: create your own token in the mapbox web page
+						accessToken: 'pk.eyJ1IjoiY2VzaXVtZXh0IiwiYSI6ImNrMDZza3BzaDNibGozbnBrdmlxamU1c3EifQ.z-Vii2yB3-6nSSFVvaodNA'
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		function createMapboxStyleImageryLayer() {
 			var viewer = mapComponent.getViewer();
-			
-			var provider = new Cesium.MapboxStyleImageryProvider({
-				styleId: 'streets-v11',
-				//remark: create your own token in the mapbox web page
-				accessToken: 'pk.eyJ1IjoiY2VzaXVtZXh0IiwiYSI6ImNrMDZza3BzaDNibGozbnBrdmlxamU1c3EifQ.z-Vii2yB3-6nSSFVvaodNA'
-			});
+		
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(provider);
+			var data = {
+				name: 'MapBox Streets-v11',
+				//data.iconUrl = '',
+				tooltip: 'MapBox Streets-v11 through Cesium.MapboxStyleImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.MapboxStyleImageryProvider({
+						styleId: 'streets-v11',
+						//remark: create your own token in the mapbox web page
+						accessToken: 'pk.eyJ1IjoiY2VzaXVtZXh0IiwiYSI6ImNrMDZza3BzaDNibGozbnBrdmlxamU1c3EifQ.z-Vii2yB3-6nSSFVvaodNA'
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		function createWebMapTileServiceImageryLayer() {
 			var viewer = mapComponent.getViewer();
-			
-			// USGS shaded relief tiles (KVP)
-			var provider = new Cesium.WebMapTileServiceImageryProvider({
-				url : 'http://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/WMTS',
-				layer : 'USGSShadedReliefOnly',
-				style : 'default',
-				format : 'image/jpeg',
-				tileMatrixSetID : 'default028mm',
-				// tileMatrixLabels : ['default028mm:0', 'default028mm:1', 'default028mm:2' ...],
-				maximumLevel: 19,
-				credit : new Cesium.Credit('U. S. Geological Survey')
-			});
 			//Add layer
-			viewer.imageryLayers.addImageryProvider(provider);
+			// USGS shaded relief tiles (KVP)
+			var data = {
+				name: 'USGS Shaded Relief',
+				//data.iconUrl = '',
+				tooltip: 'USGS Shaded Relief through Cesium.WebMapTileServiceImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapTileServiceImageryProvider({
+						url : 'http://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/WMTS',
+						layer : 'USGSShadedReliefOnly',
+						style : 'default',
+						format : 'image/jpeg',
+						tileMatrixSetID : 'default028mm',
+						// tileMatrixLabels : ['default028mm:0', 'default028mm:1', 'default028mm:2' ...],
+						maximumLevel: 19,
+						credit : new Cesium.Credit('U. S. Geological Survey')
+					});
+					return provider;
+				}
+			};
+			
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 		}
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
 		function createBelgiumWMSImageryLayers() {
+			var data;
+			var rec;
 			var viewer = mapComponent.getViewer()
-			//remove all default imagery layers from the viewer
 			var imageryLayers = viewer.imageryLayers;
-			//imageryLayers.removeAll();
 			
-			//add Imagery Layer from WMS related to Wallonie Belgium Region (PICC: street, buildings, etc.)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
-				url : 'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer',        
-				layers: '1,3,4,5,7,9,10,11,12,14,15,16,17,19,20,21,23,24,25,26,27,28,29',
-				parameters : {
-					transparent : true,
-					format : 'image/png'
+			//add URBIS Imagery Layer from WMS related to Brussels/Belgium Region
+			data = {
+				name: 'URBIS layer for Brussels/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'URBIS layer for Brussels/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices-urbis.irisnet.be/geoserver/ows',        
+						layers: 'urbisFR',
+						parameters : {
+							transparent : true,
+							tiled: true,
+							format : 'image/png'
+						}
+					});
+					return provider;
 				}
-			}));
+			};
 			
-			//add Imagery Layer from WMS related to Flemish Belgium Region (GRB: street, buildings, etc.)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
-				url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/GRB-selectie/wms',        
-				layers: 'GRB_BSK',
-				parameters : {
-					transparent : true,
-					tiled: true,
-					format : 'image/png'
-				}
-			}));
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
 			
-			//add Address Imagery Layer from WMS related to Flemish Belgium Region (CRAB Addresses)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
-				url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
-				layers: 'Adrespos',
-				parameters : {
-					transparent : true,
-					format : 'image/png'
+			//add PICC Imagery Layer from WMS related to Brussels/Belgium Region
+			data = {
+				name: 'PICC layer for Wallon/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'PICC layer for Wallon/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer',        
+						layers: '1,3,4,5,7,9,10,11,12,14,15,16,17,19,20,21,23,24,25,26,27,28,29',
+						parameters : {
+							transparent : true,
+							format : 'image/png'
+						}
+					});
+					return provider;
 				}
-			}));
+			};
 			
-			//add Address Imagery Layer from WMS related to Flemish Belgium Region (CRAB Addresses)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
-				url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
-				layers: 'Adrespos',
-				parameters : {
-					transparent : true,
-					format : 'image/png'
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			
+			
+			
+			//add GRB Imagery Layer from WMS related to Flemish Belgium Region
+			data = {
+				name: 'GRB layer for Flemish/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'GRB layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/GRB-selectie/wms',        
+						layers: 'GRB_BSK',
+						parameters : {
+							transparent : true,
+							tiled: true,
+							format : 'image/png'
+						}
+					});
+					return provider;
 				}
-			}));
+			};
+			
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			
+			//add CRAB Address Imagery Layer from WMS related to Flemish Belgium Region
+			data = {
+				name: 'CRAB Address layer for Flemish/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'CRAB Address layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
+						layers: 'Adrespos',
+						parameters : {
+							transparent : true,
+							format : 'image/png'
+						}
+					});
+					return provider;
+				}
+			};
+			
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
+			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			
+			//Zoom to Belgium
+			viewer.camera.flyTo({
+				destination : Cesium.Cartesian3.fromDegrees(4.35, 50.84, 500000)
+			});
+			
+			
 		}
 		
 		function removeLastImageryLayer() {
@@ -332,10 +469,12 @@ Ext.application({
 			var viewer = mapComponent.getViewer();
 			//retrieve cesium ImageryLayerCollection from viewer
 			var imageryLayers = viewer.imageryLayers;
+			/*
 			//create store
 			imageryLayerStore = Ext.create('CesiumExt.data.store.ImageryLayerStore', {
 				cesiumImageryLayerCollection: imageryLayers
 			});
+			*/
 			//create plugin for row editing
 			var rowEditing = Ext.create('Ext.grid.plugin.RowEditing', {
 				clicksToMoveEditor: 1,

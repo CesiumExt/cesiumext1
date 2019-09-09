@@ -1,9 +1,9 @@
-/* Copyright (c) 2019 - Today. CesiumExt
+/* Copyright (c) 2019 - Present. CesiumExt
 
 */
 
 /**
-* Sample to show how to use 'CesiumExt.data.store.DataSourceStore
+* Sample to show how to use 'CesiumExt.featureInfo.ImageryLayerFeatureInfo
 *
 *@author Paulo Sergio SAMPAIO de ARAGAO
 */
@@ -12,12 +12,7 @@ Ext.require([
 	'Ext.container.Container',
 	'Ext.Viewport',
     'Ext.panel.Panel',
-    'Ext.grid.Panel',
-	'Ext.grid.plugin.RowEditing',
 	'CesiumExt.map.Map',
-	'CesiumExt.data.store.ImageryLayerStore',
-	'CesiumExt.data.model.ImageryLayerModel',
-	'CesiumExt.interaction.GetPositionInteraction',
 	'CesiumExt.featureInfo.ImageryLayerFeatureInfo'
 ]);
 
@@ -25,6 +20,10 @@ var toolbar;
 var mapPanel;
 var descriptionPanel;
 var mapComponent;
+var picc_layer;
+var grb_layer;
+var crab_address_layer;
+var urbis_layer
 
 
 Ext.application({
@@ -34,15 +33,12 @@ Ext.application({
 		mapComponent = Ext.create('CesiumExt.map.Map', {
 			viewerConfig: {
 				infoBox: false,
-				//selectionIndicator: false,
-				//baseLayerPicker: false
+				selectionIndicator: false,
 			}
 		});
 		
 		mapComponent.on('viewercreated', function(viewer) {
 			var imageryLayers = viewer.imageryLayers;
-			//imageryLayers.removeAll();
-			//createImageryLayerGridPanel();
 			createBelgiumWMSImageryLayers();
 		});
 		
@@ -51,14 +47,40 @@ Ext.application({
 			region : 'north',
 			items: [ 
 				{
-					text : 'Feature Info',
+					text : 'Zoom',
 					menu : 
 					[ 
 						{
-							text : 'FeatureInfo for all the Imagery Layers',
-							handler: getFeatureInfoForAllLayers
+							text: 'Zoom to Belgium GRB Layer(Flemish Region)',
+							handler: function() {
+								mapComponent.getViewer().camera.flyTo({
+									destination : Cesium.Cartesian3.fromDegrees(4.3, 51, 350000)
+								});
+							}
+						},
+						{
+							text: 'Zoom to Belgium PICC Layer (Walloon Region)',
+							handler: function() {
+								mapComponent.getViewer().camera.flyTo({
+									destination : Cesium.Cartesian3.fromDegrees(4.9, 50, 200000)
+								});
+							}
+						},
+						{
+							text: 'Zoom to Belgium URBIS Layer (Brussels Region)',
+							handler: function() {
+								mapComponent.getViewer().camera.flyTo({
+									destination : Cesium.Cartesian3.fromDegrees(4.35, 50.84, 20000)
+								});
+							}
 						}
 					]
+				},
+				{
+					xtype: 'button',
+					icon: 'info-16.png',
+					tooltip: 'Imagery Layer Features Info',
+					handler: getFeatureInfo,
 				}
 			]
 		});
@@ -72,8 +94,9 @@ Ext.application({
         descriptionPanel = Ext.create('Ext.panel.Panel', {
             contentEl: 'description',
             title: 'Description',
+			resizable: true, 
             region: 'east',
-            width: 300,
+            width: 350,
 			collapsible: true,
             border: true,
             bodyPadding: 5
@@ -90,7 +113,7 @@ Ext.application({
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
 		
-		function getFeatureInfoForAllLayers() {
+		function getFeatureInfo() {
 			var viewer = mapComponent.getViewer();
 			var imageryLayers = viewer.imageryLayers;
 			//create feature info
@@ -109,8 +132,19 @@ Ext.application({
 			var imageryLayers = viewer.imageryLayers;
 			//imageryLayers.removeAll();
 			
+			//add Imagery Layer from WMS related to Brussels Belgium Region (URBIS: street, buildings, etc.)
+			urbis_layer = imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
+				url : 'https://geoservices-urbis.irisnet.be/geoserver/ows',        
+				layers: 'urbisFR',
+				parameters : {
+					transparent : true,
+					tiled: true,
+					format : 'image/png'
+				}
+			}));
+			
 			//add Imagery Layer from WMS related to Wallonie Belgium Region (PICC: street, buildings, etc.)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
+			picc_layer = imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
 				url : 'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer',        
 				layers: '1,3,4,5,7,9,10,11,12,14,15,16,17,19,20,21,23,24,25,26,27,28,29',
 				parameters : {
@@ -120,7 +154,7 @@ Ext.application({
 			}));
 			
 			//add Imagery Layer from WMS related to Flemish Belgium Region (GRB: street, buildings, etc.)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
+			grb_layer = imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
 				url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/GRB-selectie/wms',        
 				layers: 'GRB_BSK',
 				parameters : {
@@ -131,17 +165,7 @@ Ext.application({
 			}));
 			
 			//add Address Imagery Layer from WMS related to Flemish Belgium Region (CRAB Addresses)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
-				url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
-				layers: 'Adrespos',
-				parameters : {
-					transparent : true,
-					format : 'image/png'
-				}
-			}));
-			
-			//add Address Imagery Layer from WMS related to Flemish Belgium Region (CRAB Addresses)
-			imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
+			crab_address_layer = imageryLayers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
 				url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
 				layers: 'Adrespos',
 				parameters : {
