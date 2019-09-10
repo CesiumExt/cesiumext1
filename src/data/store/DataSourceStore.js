@@ -22,6 +22,7 @@
 Ext.define('CesiumExt.data.store.DataSourceStore', {
     extend: 'Ext.data.Store',
     requires: [
+		'Ext.data.Store',
         'CesiumExt.data.model.DataSourceModel'
     ],
 
@@ -53,7 +54,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 		/**
          * A configured array of Cesium DataSources
          *
-         * @cfg {array of Cesium.DataSource} cesiumDataSources
+         * @cfg {Cesium.DataSource[]} cesiumDataSources
          */
 		cesiumDataSources: []
 	},
@@ -192,8 +193,8 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
      * @param {Cesium.DataSourceCollection} dataSourceCollection. The DataSourceCollection 
 	 * 		where an dataSource was added.
 	 * @param {Cesium.DataSource} dataSource. The moved DataSource
-	 * @param {int} newIdx. The new position for the input dataSource
-	 * @param {int} oldIdx. The old position for the input dataSource
+	 * @param {Number} newIdx. The new position for the input dataSource
+	 * @param {Number} oldIdx. The old position for the input dataSource
      * @private
      */
     onCesiumDataSourceMoved: function(dataSource, newIdx, oldIdx) {
@@ -218,9 +219,9 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
      * Handler for a store's `load` event.
 	 * Forwards change FROM Ext.data.Store TO Cesium.DataSourceCollection.
      *
-     * @param {Ext.data.Store} store The store that loaded.
-     * @param {Ext.data.Model[]} records An array of loades model instances.
-     * @param {Boolean} successful Whether loading was successful or not.
+     * @param {Ext.data.Store} store. The store that loaded.
+     * @param {Ext.data.Model[]} records. An array of loaded model instances.
+     * @param {Boolean} successful. Whether loading was successful or not.
      * @private
      */
     onLoad: function(store, records, successful) {

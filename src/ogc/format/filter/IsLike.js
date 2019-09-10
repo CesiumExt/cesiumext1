@@ -1,37 +1,32 @@
 /**
- * @classdesc
+ * @class
  * Represents a `<PropertyIsLike>` comparison operator.
- * @extends {Geo3dExt.ogc.format.filter.Comparison}
+ * @extends {CesiumExt.ogc.format.filter.Comparison}
  */
-Ext.define('Geo3dExt.ogc.format.filter.IsLike', {
-    extend:'Geo3dExt.ogc.format.filter.Comparison',
+Ext.define('CesiumExt.ogc.format.filter.IsLike', {
+    extend:'CesiumExt.ogc.format.filter.Comparison',
 	
   /**
-   * @public
    * @type {!string}
    */
 	pattern: null,
 	
   /**
-   * @public
    * @type {!string}
    */
 	wildCard: null,
 	
 	/**
-   * @public
    * @type {!string}
    */
 	singleChar: null,
 	
 	/**
-   * @public
    * @type {!string}
    */
 	escapeChar: null,
 	
-	/**
-   * @public
+  /**
    * @type {!boolean|undefined}
    */
 	matchCase: null,

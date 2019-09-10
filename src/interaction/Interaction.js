@@ -35,7 +35,7 @@ Ext.define('CesiumExt.interaction.Interaction', {
 	
 	
 	/**
-	* @parameter {Object} The configuration object for this Interaction.
+	* @param {Object} The configuration object for this Interaction.
 	* @inheritdoc
 	*/
 	constructor: function(config) {

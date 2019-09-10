@@ -67,7 +67,7 @@
 	/**
 	* The `CesiumExt.data.model.DataSourceModel` Constructor.
 	*
-	* @parameter {Cesium.DataSource | Object}. The Cesium.DataSource instance or
+	* @param {Cesium.DataSource | Object} data. The Cesium.DataSource instance or
 	* 	json object configuration to create a new Cesium.DataSource instance
 	* @inheritdoc
 	*/

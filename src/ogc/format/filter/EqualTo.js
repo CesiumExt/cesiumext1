@@ -1,10 +1,10 @@
 /**
- * @classdesc
+ * @class
  * Represents a `<PropertyIsEqualTo>` comparison operator.
- * @extends {Geo3dExt.ogc.format.filter.ComparisonBinary}
+ * @extends {CesiumExt.ogc.format.filter.ComparisonBinary}
  */
-Ext.define('Geo3dExt.ogc.format.filter.EqualTo', {
-    extend:'Geo3dExt.ogc.format.filter.ComparisonBinary',
+Ext.define('CesiumExt.ogc.format.filter.EqualTo', {
+    extend:'CesiumExt.ogc.format.filter.ComparisonBinary',
 
 	
 	/**

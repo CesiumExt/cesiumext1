@@ -1,10 +1,10 @@
 /**
- * @classdesc
+ * @class
  * Represents a `<PropertyIsNull>` comparison operator.
- * @extends {Geo3dExt.ogc.format.filter.Comparison}
+ * @extends {CesiumExt.ogc.format.filter.Comparison}
  */
-Ext.define('Geo3dExt.ogc.format.filter.IsNull', {
-    extend:'Geo3dExt.ogc.format.filter.Comparison',
+Ext.define('CesiumExt.ogc.format.filter.IsNull', {
+    extend:'CesiumExt.ogc.format.filter.Comparison',
 	
 	
 	/**

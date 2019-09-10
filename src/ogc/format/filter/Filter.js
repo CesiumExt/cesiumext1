@@ -1,10 +1,10 @@
 /**
- * @classdesc
+ * @class
  * Abstract class; normally only used for creating subclasses and not instantiated in apps.
  * Base class for WFS GetFeature filters.
  *
  */
-Ext.define('Geo3dExt.ogc.format.filter.Filter', {
+Ext.define('CesiumExt.ogc.format.filter.Filter', {
     extend: 'Ext.Base',
 	
 	/**
@@ -17,8 +17,6 @@ Ext.define('Geo3dExt.ogc.format.filter.Filter', {
 	* @constructor
 	* @abstract
 	* @param {!string} tagName The XML tag name for this filter.
-	* @struct
-	* @api
 	*/
 	constructor: function(tagName) {
         this.tagName_ = tagName;

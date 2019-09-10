@@ -1,11 +1,11 @@
 /**
- * @classdesc
+ * @class
  * Abstract class; normally only used for creating subclasses and not instantiated in apps.
  * Base class for WFS GetFeature n-ary logical filters.
- * @extends {Geo3dExt.ogc.format.filter.Filter}
+ * @extends {CesiumExt.ogc.format.filter.Filter}
  */
-Ext.define('Geo3dExt.ogc.format.filter.LogicalNary', {
-    extend: 'Geo3dExt.ogc.format.filter.Filter',
+Ext.define('CesiumExt.ogc.format.filter.LogicalNary', {
+    extend: 'CesiumExt.ogc.format.filter.Filter',
 	requires: [
         'Ext'
     ],
@@ -13,7 +13,7 @@ Ext.define('Geo3dExt.ogc.format.filter.LogicalNary', {
 	
 	/**
 	* @constructor
-	* @param {!Geo3dExt.ogc.format.filter.Filter} condition Filter condition.
+	* @param {!CesiumExt.ogc.format.filter.Filter} condition Filter condition.
 	*/
 	constructor: function(tagName, conditions) {
 		this.callParent([tagName]);

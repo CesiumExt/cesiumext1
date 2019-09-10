@@ -1,10 +1,10 @@
 /**
- * @classdesc
+ * @class
  * presents a `<PropertyIsLessThanOrEqualTo>` comparison operator.
- * @extends {Geo3dExt.ogc.format.filter.ComparisonBinary}
+ * @extends {CesiumExt.ogc.format.filter.ComparisonBinary}
  */
-Ext.define('Geo3dExt.ogc.format.filter.LessThanOrEqualTo', {
-    extend:'Geo3dExt.ogc.format.filter.ComparisonBinary',
+Ext.define('CesiumExt.ogc.format.filter.LessThanOrEqualTo', {
+    extend:'CesiumExt.ogc.format.filter.ComparisonBinary',
 
 	
 	/**

@@ -191,7 +191,7 @@
 	/**
 	* The `CesiumExt.data.model.ImageryLayerModel` Constructor.
 	*
-	* @parameter {Cesium.ImageryLayer | Object}. The Cesium.ImageryLayer instance or
+	* @param {Cesium.ImageryLayer | Object} data. The Cesium.ImageryLayer instance or
 	* 	json object configuration to create a new Cesium.ImageryLayer instance
 	* @inheritdoc
 	*/
@@ -215,11 +215,11 @@
 	
 	/**
 	* Function to create a instance of Cesium.ImageryLayer based on the config object
-	* @parameter {Cesium.ImageryLayer | Object} The Cesium.ImageryLayer instance or the
+	* @param {Cesium.ImageryLayer | Object} The Cesium.ImageryLayer instance or the
 	* 	json object configuration to create a new Cesium.ImageryLayer instance
 	* @private
 	*/
-	createCesiumImageryLayer(data) {
+	createCesiumImageryLayer: function(data) {
 		var me = this;
 		data = data || {};
 		

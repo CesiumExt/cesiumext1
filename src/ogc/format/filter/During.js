@@ -1,19 +1,17 @@
 /**
- * @classdesc
+ * @class
  * Represents a `<During>` comparison operator.
- * @extends {Geo3dExt.ogc.format.filter.Comparison}
+ * @extends {CesiumExt.ogc.format.filter.Comparison}
  */
-Ext.define('Geo3dExt.ogc.format.filter.During', {
-    extend:'Geo3dExt.ogc.format.filter.Comparison',
+Ext.define('CesiumExt.ogc.format.filter.During', {
+    extend:'CesiumExt.ogc.format.filter.Comparison',
 	
   /**
-   * @public
    * @type {!string}
    */
 	begin: null,
 	
   /**
-   * @public
    * @type {!string}
    */
 	end: null,

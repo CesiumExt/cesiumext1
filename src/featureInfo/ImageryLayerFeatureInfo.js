@@ -35,7 +35,7 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 	
 	
 	/**
-	* @parameter {Object} The configuration object for this Interaction.
+	* @param {Object} The configuration object for this Interaction.
 	* @inheritdoc
 	*/
 	constructor: function(config) {
@@ -120,17 +120,5 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 			}
 		});
 	},
-	
-	
-	
-	 /**
-     * @inheritdoc
-     */
-	 /*
-    destroy: function() { 
-		this.cleanup();
-		this.callParent(arguments);
-	}
-	*/
 	
 });

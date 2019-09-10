@@ -230,7 +230,6 @@ Ext.define('CesiumExt.map.OverviewMap', {
 	/**
      * Initializes the CesiumExt.map.OverviewMap.
      */
-    //initComponent: function() {
 	startComponent: function() {
         var me = this;
 
@@ -384,7 +383,7 @@ Ext.define('CesiumExt.map.OverviewMap', {
     },
 	
 	
-	recenterByCartesianPosition(newCartesianPosition)
+	recenterByCartesianPosition: function(newCartesianPosition)
 	{
 		//initialize variables
 		var me = this;

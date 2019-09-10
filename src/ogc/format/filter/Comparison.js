@@ -1,11 +1,11 @@
 /**
- * @classdesc
+ * @class
  * Abstract class; normally only used for creating subclasses and not instantiated in apps.
  * Base class for WFS GetFeature property comparison filters.
- * @extends {Geo3dExt.ogc.format.filter.Filter}
+ * @extends {CesiumExt.ogc.format.filter.Filter}
  */
-Ext.define('Geo3dExt.ogc.format.filter.Comparison', {
-    extend:'Geo3dExt.ogc.format.filter.Filter',
+Ext.define('CesiumExt.ogc.format.filter.Comparison', {
+    extend:'CesiumExt.ogc.format.filter.Filter',
 	propertyName: null,
 	
 	/**

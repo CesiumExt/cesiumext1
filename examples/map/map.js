@@ -24,7 +24,7 @@ Ext.application({
         var descriptionPanel;
 		mapComponent = Ext.create('CesiumExt.map.Map');
 		/*
-		lom3d.mainPanel.mapComponent = Ext.create('Geo3dExt.component.Map', {
+		lom3d.mainPanel.mapComponent = Ext.create('CesiumExt.map.Map', {
 			viewerConfig: {
 				scene3DOnly: true,
 				selectionIndicator: false,

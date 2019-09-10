@@ -1,15 +1,15 @@
 /**
- * @classdesc
+ * @class
  * Represents a logical `<Not>` operator for a filter condition.
- * @extends {Geo3dExt.ogc.format.filter.Filter}
+ * @extends {CesiumExt.ogc.format.filter.Filter}
  */
-Ext.define('Geo3dExt.ogc.format.filter.Not', {
-    extend: 'Geo3dExt.ogc.format.filter.Filter',
+Ext.define('CesiumExt.ogc.format.filter.Not', {
+    extend: 'CesiumExt.ogc.format.filter.Filter',
 	condition: null,
 	
 	/**
 	* @constructor
-	* @param {!Geo3dExt.ogc.format.filter.Filter} condition Filter condition.
+	* @param {!CesiumExt.ogc.format.filter.Filter} condition Filter condition.
 	*/
 	constructor: function(condition) {
 		this.callParent(['Not']);

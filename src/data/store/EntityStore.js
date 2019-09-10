@@ -303,17 +303,18 @@ Ext.define('CesiumExt.data.store.EntityStore', {
         }
     },
 	
+	//onUpdate: function(store, record, operation, modifiedFieldNames, details, eOpts) 
+	
 	/**
      * Handler for a store's `update` event.
      * Forwards change FROM Ext.data.Store TO Cesium.DataSourceCollection.
 	 *
-     * @param {Ext.data.Store} store The store which was updated.
      * @param {Ext.data.Model} record The model instance that was updated.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
      * @private
      */
-    //onUpdate: function(store, record, operation, modifiedFieldNames, details, eOpts) {
+    
 	onUpdate: function(record, operation, modifiedFieldNames, details, eOpts) {
 		var me = this;
 		if(!me._updating) {

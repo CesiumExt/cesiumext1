@@ -126,7 +126,7 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
      * Forwards changes from the `Cesium.ImageryLayerCollection` to the Ext.data.Store.
      *
 	 * @param {Cesium.ImageryLayer} imageryLayer. The added ImageryLayer
-	 * @param {int} index. The index where the layer was added
+	 * @param {Number} index. The index where the layer was added
      * @private
      */
     onCesiumImageryLayerAdded: function(imageryLayer, index) {
@@ -143,7 +143,7 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
      * Forwards changes from the `Cesium.ImageryLayerCollection` to the Ext.data.Store.
      *
 	 * @param {Cesium.ImageryLayer} imageryLayer. The removed ImageryLayer
-	 * @param {int{ index. The index where the layer was removed in the collection
+	 * @param {Number} index. The index where the layer was removed in the collection
      * @private
      */
     onCesiumImageryLayerRemoved: function(imageryLayer, index) {
@@ -165,8 +165,8 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
      * @param {Cesium.ImageryLayerCollection} imageryLayerCollection. The ImageryLayerCollection 
 	 * 		where an imageryLayer was added.
 	 * @param {Cesium.ImageryLayer} imageryLayer. The moved ImageryLayer
-	 * @param {int} newIdx. The new position for the input imageryLayer
-	 * @param {int} oldIdx. The old position for the input imageryLayer
+	 * @param {Number} newIdx. The new position for the input imageryLayer
+	 * @param {Number} oldIdx. The old position for the input imageryLayer
      * @private
      */
     onCesiumImageryLayerMoved: function(imageryLayer, newIdx, oldIdx) {

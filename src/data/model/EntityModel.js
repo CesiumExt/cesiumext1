@@ -58,7 +58,7 @@ Ext.define('CesiumExt.data.model.EntityModel', {
 	/**
 	* The `CesiumExt.data.model.DataSourceModel` Constructor.
 	*
-	* @parameter {Cesium.Entity | Object}. The Cesium.DataSource instance or
+	* @param {Cesium.Entity | Object} data. The Cesium.DataSource instance or
 	* 	json object configuration to create a new Cesium.Entity instance
 	* @inheritdoc
 	*/

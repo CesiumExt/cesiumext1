@@ -1,19 +1,17 @@
 /**
- * @classdesc
+ * @class
  * Represents a `<PropertyIsBetween>` comparison operator.
- * @extends {Geo3dExt.ogc.format.filter.Comparison}
+ * @extends {CesiumExt.ogc.format.filter.Comparison}
  */
-Ext.define('Geo3dExt.ogc.format.filter.IsBetween', {
-    extend:'Geo3dExt.ogc.format.filter.Comparison',
+Ext.define('CesiumExt.ogc.format.filter.IsBetween', {
+    extend:'CesiumExt.ogc.format.filter.Comparison',
 	
   /**
-   * @public
    * @type {!number}
    */
 	lowerBoundary: null,
 	
   /**
-   * @public
    * @type {!number}
    */
 	upperBoundary: null,
