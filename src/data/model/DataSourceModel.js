@@ -62,8 +62,6 @@
 	],
 	
 	
-	cesiumDataSource: null,
-	
 	/**
 	* The `CesiumExt.data.model.DataSourceModel` Constructor.
 	*
@@ -75,29 +73,39 @@
 		var me = this;
 
 		data = data || {};
+		var cesiumObject;
 
 		// instantiate Cesium.DataSource object if plain data is handed over
 		if (!(data instanceof Cesium.CustomDataSource ||
 			  data instanceof Cesium.CzmlDataSource ||
 			  data instanceof Cesium.GeoJsonDataSource ||
 			  data instanceof Cesium.KmlDataSource)) {
-			me.cesiumDataSource = new Cesium.CustomDataSource(data.name);
-			me.cesiumDataSource.show = data.show;
+			cesiumObject = new Cesium.CustomDataSource(data.name);
+			cesiumObject.show = data.show;
 		}
 		else {
-			me.cesiumDataSource = data;
+			cesiumObject = data;
 		}
 		
 		data = {
-			name: me.cesiumDataSource.name,
-			show: me.cesiumDataSource.show
+			name: cesiumObject.name,
+			show: cesiumObject.show
 		}
 
 		// init record with configuration properties of underlying Cesium.DataSource instance
-		me.callParent([data]);
+		me.callParent([data, cesiumObject]);
 
 		//add listener to forward changes from Cesium.DataSource to CesiumExt.data.model.DataSourceModel
-		me.cesiumDataSource.changedEvent.addEventListener(me.onCesiumDataSourceChanged, me);
+		me.getCesiumDataSource().changedEvent.addEventListener(me.onCesiumDataSourceChanged, me);
+    },
+	
+	/**
+     * Returns the `Cesium.Datasource` object used in this model instance.
+     *
+     * @return {Cesium.DataSource} The `Cesium.DataSource` object.
+     */
+    getCesiumDataSource: function() {
+		return this.cesiumObject;
     },
 	
 	/**
@@ -141,22 +149,11 @@
 
         // iterate over object setting changes to Cesium.DataSource
         Ext.Object.each(o, function(k, v) {
-			this.cesiumDataSource[k] = v;
+			this.getCesiumDataSource()[k] = v;
         }, this);
 
         this.__updating = false;
     },
-
-	
-	/**
-     * Returns the `Cesium.Datasource` object used in this model instance.
-     *
-     * @return {Cesium.DataSource} The `Cesium.DataSource` object.
-     */
-    getCesiumDataSource: function() {
-		return this.cesiumDataSource;
-    },
-	
 	
 	/**
      * Overriden to unregister all added event listeners on the Cesium.DataSource.

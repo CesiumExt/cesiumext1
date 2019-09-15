@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 CesiumExtJS
+/* Copyright (c) 2019-Present CesiumExt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+ 
 /**
  * Simple store that maps a Cesium.ImageryLayerCollection to a Ext.data.Store.
  *
@@ -187,6 +188,15 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
 		}
     },
 	
+	/**
+     * Forwards changes from the `Cesium.ImageryLayerCollection` to the Ext.data.Store if
+	 * the visibility of the layer changes.
+     *
+	 * @param {Cesium.ImageryLayer} imageryLayer. The moved ImageryLayer
+	 * @param {Number} index. The index of the changed imageryLayer
+	 * @param {Boolean} show. The new visibility for the imageryLayer
+     * @private
+     */
 	onCesiumImageryLayerShownOrHidden: function(imageryLayer, index, show) {
 		var me = this;
 		var record = me.getAt(index);

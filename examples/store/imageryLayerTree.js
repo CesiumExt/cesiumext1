@@ -13,18 +13,21 @@ Ext.require([
 	'Ext.Viewport',
     'Ext.panel.Panel',
     'Ext.grid.Panel',
+	'Ext.tree.Panel',
 	'Ext.grid.plugin.RowEditing',
 	'CesiumExt.map.Map',
-	'CesiumExt.data.store.ImageryLayerStore',
-	'CesiumExt.data.model.ImageryLayerModel'
+	'CesiumExt.data.model.GroupTreeModel',
+	'CesiumExt.data.store.ImageryLayerTreeStore',
+	'CesiumExt.data.model.ImageryLayerTreeModel'
 ]);
 
 var toolbar;
 var mapPanel;
 var descriptionPanel;
+var eastPanel;
 var mapComponent;
 var tabPanel;
-var imageryLayerStore;
+var imageryLayerTreeStore;
 
 Ext.application({
     name: 'ImageryLayer',
@@ -43,12 +46,20 @@ Ext.application({
 		mapComponent.on('viewercreated', function(viewer) {
 			var imageryLayers = viewer.imageryLayers;
 			imageryLayers.removeAll();
-			//create store
-			imageryLayerStore = Ext.create('CesiumExt.data.store.ImageryLayerStore', {
+			//create initial Group Tree model to store all the imagery layers
+			var imageryLayerGroupTreeModel = Ext.create('CesiumExt.data.model.GroupTreeModel', {
+				name: 'Imagery Layers',
+			});
+			//create tree store
+			imageryLayerTreeStore = Ext.create('CesiumExt.data.store.ImageryLayerTreeStore', {
+				imageryLayerTreeModel: imageryLayerGroupTreeModel,
 				cesiumImageryLayerCollection: imageryLayers
 			});
+			//create tree panel
+			var treePanel = createImageryLayerTreePanel(imageryLayerTreeStore);
+			
 			//create grid panel
-			createImageryLayerGridPanel();
+			//createImageryLayerGridPanel();
 		});
 		
 		//create main menu toolbar
@@ -126,16 +137,32 @@ Ext.application({
             layout: 'fit',
             items: [mapComponent]
         });
-
-        descriptionPanel = Ext.create('Ext.panel.Panel', {
+		
+		descriptionPanel = Ext.create('Ext.panel.Panel', {
             contentEl: 'description',
             title: 'Description',
-            region: 'east',
-            width: 300,
-			collapsible: true,
-            border: true,
-            bodyPadding: 5
+			flex: 1,
+            border: false,
+            bodyPadding: 5,
+            autoScroll: true
         });
+		
+		eastPanel = Ext.create('Ext.panel.Panel', {
+			xtype: 'panel',
+			region: 'east',
+			width: 400,
+			border: false,
+			resizable: true,
+			collapsible: true,
+			layout: {
+				type: 'vbox',
+				align: 'stretch'
+			},
+			items: [
+				descriptionPanel,
+			]
+		});
+		
 		
 		tabPanel = Ext.create('Ext.tab.Panel', {
 			//title: 'Tab Panel',
@@ -153,12 +180,12 @@ Ext.application({
             items: [
 				toolbar,
                 mapPanel,
-                descriptionPanel,
+                eastPanel,
 				tabPanel
             ]
         });
 		
-		
+	
 		function createArcGisMapServerImageryLayer() {
 			var viewer = mapComponent.getViewer();
 			var data = {
@@ -174,8 +201,9 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			///imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
+			imageryLayerTreeStore.addNode(rec);
 			
 		}
 		
@@ -195,8 +223,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		function createTileMapServiceImageryLayer() {
@@ -222,8 +250,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		function createGoogleEarthEnterpriseImageryLayer() {
@@ -243,8 +271,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		function createGoogleEarthEnterpriseMapsImageryLayer() {
@@ -265,8 +293,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		function createMapboxImageryLayer() {
@@ -288,8 +316,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		function createMapboxStyleImageryLayer() {
@@ -311,8 +339,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		function createWebMapTileServiceImageryLayer() {
@@ -339,8 +367,8 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 		}
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
@@ -348,7 +376,7 @@ Ext.application({
 			var data;
 			var rec;
 			var viewer = mapComponent.getViewer()
-			//var imageryLayers = viewer.imageryLayers;
+			var imageryLayers = viewer.imageryLayers;
 			
 			//add URBIS Imagery Layer from WMS related to Brussels/Belgium Region
 			data = {
@@ -370,8 +398,8 @@ Ext.application({
 				}
 			};
 			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 			
 			//add PICC Imagery Layer from WMS related to Brussels/Belgium Region
 			data = {
@@ -392,8 +420,8 @@ Ext.application({
 				}
 			};
 			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 			
 			
 			
@@ -417,8 +445,8 @@ Ext.application({
 				}
 			};
 			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 			
 			//add CRAB Address Imagery Layer from WMS related to Flemish Belgium Region
 			data = {
@@ -439,8 +467,8 @@ Ext.application({
 				}
 			};
 			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerModel', data);
-			imageryLayerStore.insert(imageryLayerStore.getCount(), rec);
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
 			
 			//Zoom to Belgium
 			viewer.camera.flyTo({
@@ -464,6 +492,24 @@ Ext.application({
 				imageryLayers.removeAll(true);
 		}
 		
+		function createImageryLayerTreePanel(treeStore) {
+			
+			 var treePanel = Ext.create('Ext.tree.Panel', {
+				title: 'Tree Example',
+				viewConfig: {
+					plugins: {ptype: 'treeviewdragdrop'}
+				},
+				store: treeStore,
+				//rootVisible: false,
+				flex: 1,
+				border: false
+			});
+			
+			eastPanel.add(treePanel).show();
+			
+			return treePanel;
+		}
+		
 		
 		function createImageryLayerGridPanel() {
 			var viewer = mapComponent.getViewer();
@@ -471,7 +517,7 @@ Ext.application({
 			var imageryLayers = viewer.imageryLayers;
 			/*
 			//create store
-			imageryLayerStore = Ext.create('CesiumExt.data.store.ImageryLayerStore', {
+			imageryLayerTreeStore = Ext.create('CesiumExt.data.store.ImageryLayerStore', {
 				cesiumImageryLayerCollection: imageryLayers
 			});
 			*/
@@ -487,7 +533,7 @@ Ext.application({
 				border: true,
 				closable: true,
 				region: 'center',
-				store: imageryLayerStore,
+				store: imageryLayerTreeStore,
 				columns: [
 					{
 						text: 'Name', 

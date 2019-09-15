@@ -11,12 +11,11 @@
 Ext.require([
 	'Ext.container.Container',
 	'Ext.Viewport',
+	'Ext.toolbar.Toolbar',
     'Ext.panel.Panel',
-    'Ext.grid.Panel',
-	'Ext.grid.plugin.RowEditing',
+    'Ext.form.Panel',
+	'Ext.window.Window',
 	'CesiumExt.map.Map',
-	'CesiumExt.data.store.DataSourceStore',
-	'CesiumExt.data.model.DataSourceModel'
 ]);
 
 var toolbar;
@@ -62,7 +61,7 @@ Ext.application({
             contentEl: 'description',
             title: 'Description',
             region: 'east',
-            width: 300,
+            width: 400,
 			collapsible: true,
             border: true,
             bodyPadding: 5
@@ -91,9 +90,61 @@ Ext.application({
 			
 			function showPosition(data) {
 				getPosInteraction.un('positionRetrieved', showPosition);
-				var cartesianPos = data.cartesianPosition;
-				console.log('position' + cartesianPos);
+				showCoordinateWindow(data.cartesianPosition, data.cartographicPosition, data.windowPosition);
 			}
 		}
+		
+		function showCoordinateWindow(cartesianPos, cartographicPos, windowPos)
+		{
+			var panel = Ext.create('Ext.form.Panel', {
+				width: 300,
+				bodyPadding: 10,
+				items: [
+					{
+						xtype: 'textfield',
+						itemId: 'cartesianField',
+						name: 'Cartesian',
+						value: cartesianPos.x + ',' + cartesianPos.y,
+						width: 500,
+						fieldLabel: 'Cartesian ',
+						hideTrigger:true,
+					}, 
+					{
+						xtype: 'textfield',
+						itemId: 'cartographicField',
+						name: 'cartographic',
+						value: cartographicPos.latitude + ',' + cartographicPos.longitude,
+						width: 500,
+						fieldLabel: 'Lat/Long ',
+						hideTrigger:true,
+						allowBlank: false  // requires a non-empty value
+					}, 
+					{
+						xtype: 'textfield',
+						itemId: 'windowField',
+						name: 'Window',
+						value: windowPos.x + ',' + windowPos.y,
+						width: 500,
+						fieldLabel: 'Window ',
+						hideTrigger:true,
+						allowBlank: false  // requires a non-empty value
+					}, 
+					
+				]
+			});
+			
+			var popupWindow = Ext.create('Ext.window.Window', {
+				title: 'Show Coordinate',
+				height: 200,
+				width: 600,
+				scrollable: true,
+				constrainHeader: true,
+				layout: 'fit',
+				items: [panel]
+			});
+			popupWindow.show();
+		}
+		
+		
     }
 });

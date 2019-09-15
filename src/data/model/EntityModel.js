@@ -31,23 +31,6 @@ Ext.define('CesiumExt.data.model.EntityModel', {
     
     ],
 	
-	
-	/**
-     * The underlying Cesium.Entity.
-     *
-     * @property {Cesium.Entity}
-     */
-    cesiumEntity: null,
-
-    /**
-     * Returns the underlying `Cesium.Entity` of this record.
-     *
-     * @return {Cesium.Entity} The underlying `Cesium.Entity`.
-     */
-    getCesiumEntity: function() {
-        return this.cesiumEntity;
-    },
-	
 	proxy: {
 		type: 'memory',
 		reader: 'json'
@@ -64,56 +47,38 @@ Ext.define('CesiumExt.data.model.EntityModel', {
 	*/
     constructor: function(data) {
         var me = this;
+		var cesiumEntity;
       
         data = data || {};
 
         // instantiate Cesium.Entity if plain data is handed over
         if (!(data instanceof Cesium.Entity)) {
-            me.cesiumEntity = new Cesium.Entity(data);
+            cesiumEntity = new Cesium.Entity(data);
         }
 		else {
-			me.cesiumEntity = data;
+			cesiumEntity = data;
 		}
 
         // init record with properties of underlying cesium entities
-		//me.buildFields(me.cesiumEntity);
-		
 		var jsonProperties = {};
-		var properties = me.cesiumEntity.properties;
+		var properties = cesiumEntity.properties;
 		if(properties) {
-			jsonProperties = me.cesiumEntity.properties.getValue(Cesium.JulianDate.now());
+			jsonProperties = cesiumEntity.properties.getValue(Cesium.JulianDate.now());
 		}
-        me.callParent([jsonProperties]);
+        me.callParent([jsonProperties, cesiumEntity]);
 		//add listener to handle the change in a entity property
 		if(properties)
-			me.cesiumEntity.properties.definitionChanged.addEventListener(me.onCesiumEntityPropertiesChanged, me);
+			me.getCesiumEntity().properties.definitionChanged.addEventListener(me.onCesiumEntityPropertiesChanged, me);
     },
 	
-	/*
-	buildFields: function(entity) {
-		var me = this;
-		if(me.fields.length > 0) return;
-		var properties = entity.properties;
-		if(!properties) return;
-		var propertyNames = entity.properties.propertyNames;
-		var jsonProperties = properties.getValue(Cesium.JulianDate.now());
-		for (var i = 0; i < propertyNames.length; i++) {
-			var field = {};
-			field.name = propertyNames[i];
-			field.persist = false;
-			
-			field.convert = function(v, record) {
-				var entity = record.getCesiumEntity();
-				var jsonProps = entity.properties.getValue(Cesium.JulianDate.now());
-				return jsonProps[field.name];
-			};
-			
-			me.fields.push(field);
-		}
-		
-		return jsonProperties;
-	},
-	*/
+	/**
+     * Returns the `Cesium.Entity` object used in this model instance.
+     *
+     * @return {Cesium.Entity} The `Cesium.DataSource` object.
+     */
+    getCesiumEntity: function() {
+		return this.cesiumObject;
+    },
 	
 	/**
      * Listener to definitionChanged events of the underlying `Cesium.Entity`. All
@@ -162,7 +127,7 @@ Ext.define('CesiumExt.data.model.EntityModel', {
 				o = key;
 			}
 			// iterate over object setting changes to Cesium.Entity
-			var properties = me.cesiumEntity.properties;
+			var properties = me.getCesiumEntity().properties;
 			//var entityValues = properties.getValue(Cesium.JulianDate.now());
 			Ext.Object.each(o, function(k, v) {
 				properties.addProperty(k,  v);
@@ -178,7 +143,7 @@ Ext.define('CesiumExt.data.model.EntityModel', {
      */
     destroy: function() {
         var me = this;
-		me.cesiumEntity.properties.definitionChanged.removeEventListener(me.onCesiumEntityPropertiesChanged, me);
+		me.getCesiumEntity().properties.definitionChanged.removeEventListener(me.onCesiumEntityPropertiesChanged, me);
         this.callParent(arguments);
     },
 });

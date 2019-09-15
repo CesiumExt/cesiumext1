@@ -23,6 +23,11 @@
     requires: [
         'Ext.data.identifier.Uuid'
     ],
+	
+	/**
+     * The underlying Cesium Object.
+     */
+    cesiumObject: null,
 
     identifier: 'uuid',
 
@@ -55,5 +60,19 @@
                 return records[0];
             }
         }
-    }
+    },
+	
+	/**
+     * @inheritdoc
+     */
+    constructor: function(data, cesiumObject) {
+        var me = this;
+        data = data || {};
+		
+        me.cesiumObject = cesiumObject;
+
+        // init record with properties of underlying ol object
+        me.callParent([data]);
+    },
+	
 });

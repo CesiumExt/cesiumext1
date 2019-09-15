@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 CesiumExtJS
+/* Copyright (c) 2019-Present CesiumExt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
  Ext.define('CesiumExt.data.model.ImageryLayerModel', {
     extend: 'CesiumExt.data.model.Base',
     mixins: [
-        //'CesiumExt.mixin.SymbolCheck'
+       
     ],
 
     // <debug>
@@ -39,7 +39,6 @@
 		reader: 'json'
     },
 	
-	cesiumImageryLayer: null,
 	
 	fields: [
 	
@@ -66,11 +65,18 @@
 			defaultValue: 'Unnamed Layer',
 		},
 		{
+			name: 'iconUrl',
+			type: 'string',
+			persist: false,
+			defaultValue: null,
+		},
+		{
             name: 'alpha',
 			defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().alpha;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().alpha;
             }
         },
 		{
@@ -78,7 +84,8 @@
 			defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().brightness;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().brightness;
             }
         },
 		{
@@ -86,7 +93,8 @@
 			defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().contrast;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().contrast;
             }
         },
 		{
@@ -94,7 +102,8 @@
 			defaultValue: 0.0,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().hue;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().hue;
             }
         },
 		{
@@ -102,7 +111,8 @@
 			defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().saturation;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().saturation;
             }
         },
 		{
@@ -110,7 +120,8 @@
 			defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().gamma;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().gamma;
             }
         },
 		{
@@ -118,7 +129,8 @@
 			defaultValue: Cesium.ImagerySplitDirection.NONE,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().splitDirection;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().splitDirection;
             }
         },
 		{
@@ -126,7 +138,8 @@
 			defaultValue: Cesium.TextureMinificationFilter.LINEAR,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().minificationFilter;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().minificationFilter;
             }
         },
 		{
@@ -134,7 +147,8 @@
 			defaultValue: Cesium.TextureMagnificationFilter.LINEAR,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().magnificationFilter;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().magnificationFilter;
             }
         },
 		{
@@ -143,14 +157,16 @@
 			defaultValue: true,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().show;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().show;
             }
         },
 		{
             name: 'cutoutRectangle',
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().cutoutRectangle;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().cutoutRectangle;
             }
         },
 		{
@@ -158,7 +174,8 @@
 			defaultValue: true,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().colorToAlpha;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().colorToAlpha;
             }
         },
 		{
@@ -167,20 +184,21 @@
 			defaultValue: 	0.004,
 			persist: false,
             convert: function(v, record) {
-                return record.getCesiumImageryLayer().colorToAlphaThreshold;
+				if(record.getCesiumImageryLayer())
+					return record.getCesiumImageryLayer().colorToAlphaThreshold;
             }
         },
 	],
 	
-	addFieldAfterProviderIsReady: function(isReady) {
+	addFieldAfterProviderIsReady: function(isReady, cesiumImageryLayer) {
 		var me = this;
 		if(isReady) {
 			var field = new Ext.data.field.Field({
 				name: 'rectangle',
 				persist: false,
-				defaultValue: me.getCesiumImageryLayer().imageryProvider.rectangle,
+				defaultValue: cesiumImageryLayer.imageryProvider.rectangle,
 				convert: function(v, record) {
-					return record.getCesiumImageryLayer().name;
+					return record.cesiumImageryLayer.name;
 				}
 			});
 			me.getFields().push(field);
@@ -197,19 +215,25 @@
 	*/
 	constructor: function(data) {
 		var me = this;		
-		data = me.createCesiumImageryLayer(data);
-		//add field once data provider is ready
-		if(me.getCesiumImageryLayer().imageryProvider.ready) {
-			me.addFieldAfterProviderIsReady(true);
+		var result = me.createCesiumImageryLayer(data);
+		if(result) {
+			var cesiumImageryLayer = result[1];
+			//add field once data provider is ready
+			if(cesiumImageryLayer.imageryProvider.ready) {
+				me.addFieldAfterProviderIsReady(true, cesiumImageryLayer);
+			}
+			else {
+				cesiumImageryLayer.imageryProvider.readyPromise.then(function(isReady) {
+					me.addFieldAfterProviderIsReady(isReady, cesiumImageryLayer);
+				});
+			}
+			// init record with configuration properties of underlying Cesium.DataSource instance
+			me.callParent([result[0], result[1]]);
 		}
 		else {
-			me.getCesiumImageryLayer().imageryProvider.readyPromise.then(me.addFieldAfterProviderIsReady);
+			me.callParent(data);
 		}
-		// init record with configuration properties of underlying Cesium.DataSource instance
-		me.callParent([data]);
 
-		//add listener to forward changes from Cesium.DataSource to CesiumExt.data.model.DataSourceModel
-		//me.cesiumImageryLayer.changedEvent.addEventListener(me.onCesiumDataSourceChanged, me);
     },
 	
 	
@@ -221,22 +245,23 @@
 	*/
 	createCesiumImageryLayer: function(data) {
 		var me = this;
+		var cesiumImageryLayer;
 		data = data || {};
 		
 		var newData = {};
 		// instantiate Cesium.ImageryLayer if object if plain data is handed over
 		if (data instanceof Cesium.ImageryLayer) {
-			me.cesiumImageryLayer = data;
+			cesiumImageryLayer = data;
 		}
 		else {
+			if(!data.creationFunction)
+				return;
 			//retrieve all the fields not belonging to ImageryLayer
 			var name = data.name;
 			var iconUrl = data.iconUrl;
 			var tooltip = data.tooltip;	
 			//retrieve function to create the ImageryLayer Provider
-			var creationFunction;
-			if(data.creationFunction)
-				creationFunction = data.creationFunction;
+			var creationFunction = data.creationFunction;
 			//create the ImageryLayer provider
 			var provider = creationFunction();
 			//clean the fields that should not be used to create ImageryLayer
@@ -245,30 +270,30 @@
 			delete data.tooltip;
 			delete data.creationFunction;
 			//Create Imagery Layer
-			me.cesiumImageryLayer = new Cesium.ImageryLayer(provider, data);
+			cesiumImageryLayer = new Cesium.ImageryLayer(provider, data);
 		}
 		//configure the data to be passed later to the base class
 		var new_data = {
 			name: name,
 			iconUrl: iconUrl,
 			tooltip: tooltip,
-			rectangle: me.cesiumImageryLayer.rectangle,	//read-only
-			alpha: me.cesiumImageryLayer.alpha,
-			brightness: me.cesiumImageryLayer.brightness,
-			contrast: me.cesiumImageryLayer.contrast,
-			hue: me.cesiumImageryLayer.hue,
-			saturation: me.cesiumImageryLayer.saturation,
-			gamma: me.cesiumImageryLayer.gamma,
-			splitDirection: me.cesiumImageryLayer.splitDirection,
-			minificationFilter: me.cesiumImageryLayer.minificationFilter,
-			magnificationFilter: me.cesiumImageryLayer.magnificationFilter,
-			show: me.cesiumImageryLayer.show,
-			cutoutRectangle: me.cesiumImageryLayer.cutoutRectangle,
-			colorToAlpha: me.cesiumImageryLayer.colorToAlpha,
-			colorToAlphaThreshold: me.cesiumImageryLayer.colorToAlphaThreshold,
+			rectangle: cesiumImageryLayer.rectangle,	//read-only
+			alpha: cesiumImageryLayer.alpha,
+			brightness: cesiumImageryLayer.brightness,
+			contrast: cesiumImageryLayer.contrast,
+			hue: cesiumImageryLayer.hue,
+			saturation: cesiumImageryLayer.saturation,
+			gamma: cesiumImageryLayer.gamma,
+			splitDirection: cesiumImageryLayer.splitDirection,
+			minificationFilter: cesiumImageryLayer.minificationFilter,
+			magnificationFilter: cesiumImageryLayer.magnificationFilter,
+			show: cesiumImageryLayer.show,
+			cutoutRectangle: cesiumImageryLayer.cutoutRectangle,
+			colorToAlpha: cesiumImageryLayer.colorToAlpha,
+			colorToAlphaThreshold: cesiumImageryLayer.colorToAlphaThreshold,
 		}
 		
-		return new_data;
+		return [new_data, cesiumImageryLayer];
 	},
 	
 	
@@ -278,7 +303,7 @@
      * @return {Cesium.ImageryLayer} The `Cesium.ImageryLayer` object.
      */
     getCesiumImageryLayer: function() {
-		return this.cesiumImageryLayer;
+		return this.cesiumObject;
     },
 	
 	/**
@@ -309,9 +334,10 @@
 
         // iterate over object setting changes to Cesium.ImageryLayer
         Ext.Object.each(o, function(k, v) {
-			//skip field 'name' not belonging to cesium imagery layer
-			if(k !== 'name')
-				me.cesiumImageryLayer[k] = v;
+			//skip fields not belonging to cesium imagery layer
+			if(k !== 'name' || k!== 'iconUrl' || k!= 'tooltip')
+				if(me.getCesiumImageryLayer())
+					me.getCesiumImageryLayer()[k] = v;
         }, me);
 
         this.__updating = false;
