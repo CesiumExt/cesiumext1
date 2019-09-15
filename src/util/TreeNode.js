@@ -70,11 +70,10 @@ Ext.define('CesiumExt.util.TreeNode', {
 				if(childNodes[idx] === node) {
 					index = idx;
 					break;
+				}
 			}
 
             return index;
         }
-		
-		
     }
 });
