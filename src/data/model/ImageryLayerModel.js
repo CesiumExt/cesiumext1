@@ -39,6 +39,20 @@
 		reader: 'json'
     },
 	
+	/**
+     * The layer property that will be used to label the model in views.
+     *
+     * @cfg {String}
+     */
+    textProperty: 'name',
+	
+	/**
+     * The layer property that will be used to describe the model in views.
+     *
+     * @cfg {String}
+     */
+    descriptionProperty: 'description',
+	
 	
 	fields: [
 	
@@ -58,6 +72,22 @@
 			persist: false,
 			defaultValue: 'Unnamed',
 		},
+		{
+            name: 'text',
+            type: 'string',
+            persist: false,
+            convert: function(v, record) {
+                return record.data.name;
+            }
+        },
+		{
+            name: 'qtip',
+            type: 'string',
+            persist: false,
+            convert: function(v, record) {
+                return record.data.tooltip;
+            }
+        },
 		{
 			name: 'tooltip',
 			type: 'string',

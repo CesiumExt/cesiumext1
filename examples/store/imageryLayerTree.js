@@ -201,11 +201,118 @@ Ext.application({
 				}
 			};
 			
-			var rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			var treeNode = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
 			///imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
-			imageryLayerTreeStore.addNode(rec);
+			imageryLayerTreeStore.addNode(treeNode, imageryLayerTreeStore.getRoot());
 			
 		}
+		
+		function createBelgiumWMSImageryLayers() {
+			var data;
+			var rec;
+			var viewer = mapComponent.getViewer()
+			var imageryLayers = viewer.imageryLayers;
+			
+			//add URBIS Imagery Layer from WMS related to Brussels/Belgium Region
+			data = {
+				name: 'URBIS layer for Brussels/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'URBIS layer for Brussels/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				//imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices-urbis.irisnet.be/geoserver/ows',        
+						layers: 'urbisFR',
+						parameters : {
+							transparent : true,
+							tiled: true,
+							format : 'image/png'
+						}
+					});
+					return provider;
+				}
+			};
+			
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
+			
+			//add PICC Imagery Layer from WMS related to Brussels/Belgium Region
+			data = {
+				name: 'PICC layer for Wallon/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'PICC layer for Wallon/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				//imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer',        
+						layers: '1,3,4,5,7,9,10,11,12,14,15,16,17,19,20,21,23,24,25,26,27,28,29',
+						parameters : {
+							transparent : true,
+							format : 'image/png'
+						}
+					});
+					return provider;
+				}
+			};
+			
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
+			
+			
+			
+			//add GRB Imagery Layer from WMS related to Flemish Belgium Region
+			data = {
+				name: 'GRB layer for Flemish/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'GRB layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				//imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/GRB-selectie/wms',        
+						layers: 'GRB_BSK',
+						parameters : {
+							transparent : true,
+							tiled: true,
+							format : 'image/png'
+						}
+					});
+					return provider;
+				}
+			};
+			
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
+			
+			//add CRAB Address Imagery Layer from WMS related to Flemish Belgium Region
+			data = {
+				name: 'CRAB Address layer for Flemish/Belgium Region',
+				//data.iconUrl = '',
+				tooltip: 'CRAB Address layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
+				//imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.WebMapServiceImageryProvider({
+						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
+						layers: 'Adrespos',
+						parameters : {
+							transparent : true,
+							format : 'image/png'
+						}
+					});
+					return provider;
+				}
+			};
+			
+			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
+			
+			//Zoom to Belgium
+			viewer.camera.flyTo({
+				destination : Cesium.Cartesian3.fromDegrees(4.35, 50.84, 500000)
+			});
+			
+			
+		}
+		
 		
 		function createOpenStreetMapImageryLayer() {
 			var viewer = mapComponent.getViewer();
@@ -372,111 +479,7 @@ Ext.application({
 		}
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
-		function createBelgiumWMSImageryLayers() {
-			var data;
-			var rec;
-			var viewer = mapComponent.getViewer()
-			var imageryLayers = viewer.imageryLayers;
-			
-			//add URBIS Imagery Layer from WMS related to Brussels/Belgium Region
-			data = {
-				name: 'URBIS layer for Brussels/Belgium Region',
-				//data.iconUrl = '',
-				tooltip: 'URBIS layer for Brussels/Belgium Region through Cesium.WebMapServiceImageryProvider',
-				//imageryLayers: viewer.imageryLayers,
-				creationFunction: function() {
-					var provider = new Cesium.WebMapServiceImageryProvider({
-						url : 'https://geoservices-urbis.irisnet.be/geoserver/ows',        
-						layers: 'urbisFR',
-						parameters : {
-							transparent : true,
-							tiled: true,
-							format : 'image/png'
-						}
-					});
-					return provider;
-				}
-			};
-			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
-			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
-			
-			//add PICC Imagery Layer from WMS related to Brussels/Belgium Region
-			data = {
-				name: 'PICC layer for Wallon/Belgium Region',
-				//data.iconUrl = '',
-				tooltip: 'PICC layer for Wallon/Belgium Region through Cesium.WebMapServiceImageryProvider',
-				//imageryLayers: viewer.imageryLayers,
-				creationFunction: function() {
-					var provider = new Cesium.WebMapServiceImageryProvider({
-						url : 'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer',        
-						layers: '1,3,4,5,7,9,10,11,12,14,15,16,17,19,20,21,23,24,25,26,27,28,29',
-						parameters : {
-							transparent : true,
-							format : 'image/png'
-						}
-					});
-					return provider;
-				}
-			};
-			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
-			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
-			
-			
-			
-			//add GRB Imagery Layer from WMS related to Flemish Belgium Region
-			data = {
-				name: 'GRB layer for Flemish/Belgium Region',
-				//data.iconUrl = '',
-				tooltip: 'GRB layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
-				//imageryLayers: viewer.imageryLayers,
-				creationFunction: function() {
-					var provider = new Cesium.WebMapServiceImageryProvider({
-						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/GRB-selectie/wms',        
-						layers: 'GRB_BSK',
-						parameters : {
-							transparent : true,
-							tiled: true,
-							format : 'image/png'
-						}
-					});
-					return provider;
-				}
-			};
-			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
-			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
-			
-			//add CRAB Address Imagery Layer from WMS related to Flemish Belgium Region
-			data = {
-				name: 'CRAB Address layer for Flemish/Belgium Region',
-				//data.iconUrl = '',
-				tooltip: 'CRAB Address layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
-				//imageryLayers: viewer.imageryLayers,
-				creationFunction: function() {
-					var provider = new Cesium.WebMapServiceImageryProvider({
-						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
-						layers: 'Adrespos',
-						parameters : {
-							transparent : true,
-							format : 'image/png'
-						}
-					});
-					return provider;
-				}
-			};
-			
-			rec = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
-			imageryLayerTreeStore.insert(imageryLayerTreeStore.getCount(), rec);
-			
-			//Zoom to Belgium
-			viewer.camera.flyTo({
-				destination : Cesium.Cartesian3.fromDegrees(4.35, 50.84, 500000)
-			});
-			
-			
-		}
+		
 		
 		function removeLastImageryLayer() {
 			var imageryLayers = mapComponent.getViewer().imageryLayers;

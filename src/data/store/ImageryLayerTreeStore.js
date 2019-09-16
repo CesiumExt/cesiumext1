@@ -338,16 +338,17 @@
     },
 	
 	/**
-     * Adds a layer as a node to the store. It can be an `ol.layer.Base`.
+     * Adds a layer as a node to the store.
      *
      * @param {Ext.data.NodeInterface} node The node to add.
      */
-    addNode: function(node) {
+    addNode: function(node, parentNode) {
 		var me = this;
 		if(node.get('isGroup') === true) {
-			me.getRoot().appendChild(node);
+			parentNode.appendChild(node);
 			node.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
             node.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
+			
 		}
 		else {
 			var imagerylayer = node.getCesiumImageryLayer();
@@ -360,7 +361,7 @@
 				var totalInGroup = cesiumImageryLayerColl.length;
 				idx = totalInGroup - idx - 1;
 			}
-			me.getRoot().insertChild(idx, node);
+			parentNode.insertChild(idx, node);
 		}
     },
 	
@@ -431,7 +432,7 @@
         }
 		
 		var node = me.proxy.reader.read(imageryLayer);
-		me.addNode(node);
+		me.addNode(node, me.getRoot());
     },
 	
 	/**
@@ -494,7 +495,7 @@
         // 3. remove the node from the parent
         parent.removeChild(node);
 		// 4. re-add the node in the new position
-		me.addNode(node);
+		me.addNode(node, me.getRoot());
 		
 		//TODO: to check if it is needed:
 		//me.fireEvent('update', this, record, Ext.data.Record.EDIT, null, {});
