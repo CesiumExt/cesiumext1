@@ -261,7 +261,7 @@
 			me.callParent([result[0], result[1]]);
 		}
 		else {
-			me.callParent(data);
+			me.callParent([data]);
 		}
 
     },
@@ -365,7 +365,7 @@
         // iterate over object setting changes to Cesium.ImageryLayer
         Ext.Object.each(o, function(k, v) {
 			//skip fields not belonging to cesium imagery layer
-			if(k !== 'name' || k!== 'iconUrl' || k!= 'tooltip')
+			if(k !== 'name' || k !== 'text' || k!== 'iconUrl' || k!== 'tooltip' || k!== 'qtip')
 				if(me.getCesiumImageryLayer())
 					me.getCesiumImageryLayer()[k] = v;
         }, me);

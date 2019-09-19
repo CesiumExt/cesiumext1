@@ -42,11 +42,11 @@
 			defaultValue: true
 		}, 
 		{
-            name: 'isGroup',
-            type: 'boolean',
-            persist: false,
-            defaultValue: false
-        },
+			name: 'name',
+			type: 'string',
+			persist: false,
+			defaultValue: 'Imagery Layers'
+		}, 
 		{
 			/**
 			 * This should be set via tree panel.
@@ -76,31 +76,8 @@
         imageryLayer = me.getCesiumImageryLayer();
         if (imageryLayer instanceof Cesium.ImageryLayer) {
             me.set('checked', imageryLayer.show);
-            //add event handler fired when the imagery layer visibility changes
-			//me.store.getCesiumImageryLayerCollection().layerShownOrHidden.addEventListener(me.onCesiumImageryLayerShownOrHidden, me);
         }
     },
-	
-	
-	 /**
-     * Handler for the `layerShownOrHidden ` event fired by Cesium.ImageryLayerCollection.
-     *
-     * @param {Cesium.ImageryLayer} imageryLayer The ImageryLayer on which the visibility has changed.
-	 * @param {Number} index The index of imageryLayer in the Cesium.ImageryLayerCollection
-	 * @param {Boolean} show The new visibility
-	 * @private
-     */
-	
-	onCesiumImageryLayerShownOrHidden: function(imageryLayer, index, show) {
-		/*
-		var me = this;
-		if(!me.__updating) {
-			if(me.getCesiumImageryLayer() === imageryLayer) {
-				me.set('checked', show);
-			}
-		}
-		*/
-	},
 	
 	
 	/**
@@ -122,9 +99,18 @@
         // forward changes to Cesium.ImageryLayer
         if (key === 'checked') {
             me.__updating = true;
-            me.getCesiumImageryLayer().show = newValue;
-            me.__updating = false;
-
+			if(classicMode) {
+				if(me.getCesiumImageryLayer()) {
+					me.getCesiumImageryLayer().show = newValue;
+				}
+				if(me.hasChildNodes()) {
+					me.eachChild(function(child) {
+						child.set('checked', newValue);
+                    });
+				}
+			}
+			me.__updating = false;
+           
             if (classicMode) {
                 me.toggleParentNodes(newValue);
             }
@@ -181,8 +167,7 @@
      * @inheritdoc
      */
     getRefItems: function() {
-        //return this.childNodes;
-		return null;
+        return this.childNodes;
     },
 	
 	/**

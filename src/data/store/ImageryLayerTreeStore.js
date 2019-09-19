@@ -25,8 +25,6 @@
  Ext.define('CesiumExt.data.store.ImageryLayerTreeStore', {
     extend: 'Ext.data.TreeStore',
 
-    alternateClassName: ['GeoExt.data.TreeStore'],
-
     requires: [
         //'GeoExt.util.Layer'
     ],
@@ -125,34 +123,14 @@
     constructor: function(config) {
         var me = this;
 		
-		//retrieve the models to be inserted in the store
-		var imageryLayerTreeModel = config.imageryLayerTreeModel;
-		
 		//retrieve the cesium imagery layer collection
 		var cesiumImageryLayerCollection = config.cesiumImageryLayerCollection;
 		if(!cesiumImageryLayerCollection)
 			Ext.raise('cesiumImageryLayerCollection must be provided.');
 		
-		
         me.callParent([config]);
 		me.initConfig(config);
 		
-		//set the root as a group, to differ from the root representing the imagery layer
-		me.getRoot().set('isGroup', true);
-		
-		//add the  models in the store
-		/*
-		if(imageryLayerTreeModels) {
-			Ext.each(array, function(imageryLayerTreeModel) {
-				//set the model not representing a imagery layer as a group
-				if(imageryLayerTreeModel.get('isGroup') === undefined)
-					imageryLayerTreeModel.set('isGroup') = true;
-				//add the model in the store
-				me.addNode(imageryLayerTreeModel);
-			}, me, me.inverseLayerOrder);
-		}
-		*/
-
 		//bind handler events from Cesium.ImageryLayerCollection
         me.bindCesiumCollectionEvents();
 		
@@ -201,6 +179,11 @@
     handleRemove: function(store, records, index, isMove, eOpts) {
         var me = this;
         var keyRemoveOptOut = me.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
+		
+		if (me.collectionEventsSuspended) {
+            return;
+        }
+        
         me.suspendCollectionEvents();
         Ext.each(records, function(record) {
             if (keyRemoveOptOut in record && record[keyRemoveOptOut] === true) {
@@ -208,16 +191,16 @@
                 return;
             }
 			//remove cesium imagery layer(s)
-			if(record.get('isGroup') === false) {
+			if(record.getCesiumImageryLayer()) {
 				//retrieve cesium imagery layer
 				var cesiumImageryLayer = record.getCesiumImageryLayer();
 				var cesiumImageryLayerColl = me.getCesiumImageryLayerCollection();
 				if(isMove)
-					cesiumImageryLayerColl.remove(cesiumImageryLayer, true);
-				else
 					cesiumImageryLayerColl.remove(cesiumImageryLayer, false);
+				else
+					cesiumImageryLayerColl.remove(cesiumImageryLayer, true);
 			}
-			else {
+			if(record.hasChildNodes()) {
 				var childNodes = record.childNodes;
 				me.handleRemove(store, childNodes, index, isMove, eOpts);
 			}
@@ -233,25 +216,36 @@
      * @param {CesiumExt.data.model.ImageryLayerTreeModel} removedNode The removed node.
      * @private
      */
-	handleNodeRemove: function(store, removedNode, isMove, context, eOpts) {
+	handleNodeRemove: function(parentNode, removedNode, isMove, context, eOpts) {
 		var me = this;
 		
+		//remove parent node if it is an empty folder
+		if(!parentNode.hasChildNodes() && !parentNode.isRoot()) {
+			var grandParentNode = parentNode.parentNode;
+			grandParentNode.removeChild(parentNode);
+		}
+		
+		if (me.collectionEventsSuspended) {
+            return;
+        }
+		
 		me.suspendCollectionEvents();
-		if(removedNode.get('isGroup') === false) {
+		if(removedNode.getCesiumImageryLayer()) {
 			var cesiumImageryLayer = removedNode.getCesiumImageryLayer();
 			var cesiumImageryLayerColl = me.getCesiumImageryLayerCollection();
 			if(isMove)
-				cesiumImageryLayerColl.remove(cesiumImageryLayer, true);
-			else
 				cesiumImageryLayerColl.remove(cesiumImageryLayer, false);
+			else
+				cesiumImageryLayerColl.remove(cesiumImageryLayer, true);
 		}
+		//else if(removedNode.hasChildNodes() || removedNode.isRoot()) {
 		else {
 			removedNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
 			removedNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
 			
 			var childNodes = removedNode.childNodes;
 			for(var i = 0; i < childNodes.length; ++i) {
-				me.handleNodeRemove(store, childNodes[i], isMove, context, eOpts);
+				me.handleNodeRemove(parentNode, childNodes[i], isMove, context, eOpts);
 			}
 		}
 		me.resumeCollectionEvents();
@@ -271,7 +265,7 @@
         var me = this;
 		
 		//if it is a group node, no imagery layer is associated
-		if(appendedNode.get('isGroup') !== false)
+		if(!appendedNode.getCesiumImageryLayer())
 			return;
 		
 		var imageryLayer = appendedNode.getCesiumImageryLayer();
@@ -306,7 +300,7 @@
 		var me = this;
 		
 		//if it is a group node, no imagery layer is associated
-		if(insertedNode.get('isGroup') !== false)
+		if(!insertedNode.getCesiumImageryLayer())
 			return;
 		
 		var beforeImagerylayer = insertedBeforeNode.getCesiumImageryLayer();
@@ -344,7 +338,7 @@
      */
     addNode: function(node, parentNode) {
 		var me = this;
-		if(node.get('isGroup') === true) {
+		if(!node.getCesiumImageryLayer()) {
 			parentNode.appendChild(node);
 			node.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
             node.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
@@ -361,7 +355,15 @@
 				var totalInGroup = cesiumImageryLayerColl.length;
 				idx = totalInGroup - idx - 1;
 			}
-			parentNode.insertChild(idx, node);
+			node = parentNode.insertChild(idx, node);
+			if(parentNode.isRoot()) {
+				//remove and re-insert events to avoid to register multiple times
+				parentNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
+				parentNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
+				
+				parentNode.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
+				parentNode.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
+			}
 		}
     },
 	
@@ -450,9 +452,11 @@
             return;
         }
         
+		 me.suspendCollectionEvents();
+		
         // 1. find the node that existed for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
-            return (candidate.get('isGroup') === false) && (candidate.getCesiumImageryLayer() === imageryLayer);
+            return (candidate.getCesiumImageryLayer() === imageryLayer);
         }, me, true);
         if (!node) {
             return;
@@ -461,6 +465,8 @@
         var parent = node.parentNode;
         // 3. remove the node from the parent
         parent.removeChild(node);
+		
+		me.resumeCollectionEvents();
     },
 	
 	/**
@@ -485,7 +491,7 @@
 		
 		// 1. find the node for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
-            return (candidate.get('isGroup') === false) && (candidate.getCesiumImageryLayer() === imageryLayer);
+            return (candidate.getCesiumImageryLayer() === imageryLayer);
         }, me, true);
         if (!node) {
             return;
@@ -519,7 +525,7 @@
 		
 		// 1. find the node for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
-            return (candidate.get('isGroup') === false) && (candidate.getCesiumImageryLayer() === imageryLayer);
+            return (candidate.getCesiumImageryLayer() === imageryLayer);
         }, me, true);
         if (!node) {
             return;

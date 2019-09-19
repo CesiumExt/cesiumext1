@@ -43,11 +43,27 @@
 			defaultValue: 'Unnamed',
 		},
 		{
+            name: 'text',
+            type: 'string',
+            persist: false,
+            convert: function(v, record) {
+                return record.data.name;
+            }
+        },
+		{
+            name: 'qtip',
+            type: 'string',
+            persist: false,
+            defaultValue: ''
+        },
+		/*
+		{
 			name: 'tooltip',
 			type: 'string',
 			persist: false,
-			defaultValue: 'Unnamed',
+			defaultValue: '',
 		},
+		*/
 		{
 			name: 'iconUrl',
 			type: 'string',
@@ -89,7 +105,9 @@
      */
     constructor: function() {
 		var me = this;
+		
         me.callParent(arguments);
+		me.set('checked', true);
     },
 	
 	
