@@ -202,7 +202,7 @@ Ext.application({
 			var dataSources = mapComponent.getViewer().dataSources;
 			//create store
 			var dataSourceStore = Ext.create('CesiumExt.data.store.DataSourceStore', {
-				cesiumMap: mapComponent
+				cesiumDataSourceCollection: dataSources
 			});
 			//create plugin for row editing
 			var rowEditing = Ext.create('Ext.grid.plugin.RowEditing', {

@@ -15,6 +15,7 @@
  */
 /**
  * @class CesiumExt.data.model.Base
+ * Base class for the model
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
  

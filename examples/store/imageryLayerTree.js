@@ -87,6 +87,24 @@ Ext.application({
 						},
 						'-',
 						{
+							text : 'Raise Bottom Layer',
+							handler: raiseBottomLayer
+						},
+						{
+							text : 'Raise Bottom Layer to Top',
+							handler: raiseBottomLayerToTop
+						},
+						'-',
+						{
+							text : 'Lower Top Layer',
+							handler: lowerTopLayer
+						},
+						{
+							text : 'Lower Top Layer To Bottom',
+							handler: lowerTopLayerToBottom
+						},
+						'-',
+						{
 							text : 'Remove ALL ImageryLayers',
 							handler: removeAllImageryLayers,
 						},
@@ -303,6 +321,34 @@ Ext.application({
 			eastPanel.add(treePanel).show();
 			
 			return treePanel;
+		}
+		
+		function raiseBottomLayer()
+		{
+			var imageryLayers = mapComponent.getViewer().imageryLayers;
+			var imageryLayer = imageryLayers.get(0);
+			imageryLayers.raise(imageryLayer);
+		}
+		
+		function raiseBottomLayerToTop()
+		{
+			var imageryLayers = mapComponent.getViewer().imageryLayers;
+			var imageryLayer = imageryLayers.get(0);
+			imageryLayers.raiseToTop(imageryLayer);
+		}
+		
+		function lowerTopLayer()
+		{
+			var imageryLayers = mapComponent.getViewer().imageryLayers;
+			var imageryLayer = imageryLayers.get(imageryLayers.length -1);
+			imageryLayers.lower(imageryLayer);
+		}
+		
+		function lowerTopLayerToBottom()
+		{
+			var imageryLayers = mapComponent.getViewer().imageryLayers;
+			var imageryLayer = imageryLayers.get(imageryLayers.length -1);
+			imageryLayers.lowerToBottom(imageryLayer);
 		}
     }
 });

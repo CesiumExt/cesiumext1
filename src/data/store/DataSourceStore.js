@@ -20,14 +20,14 @@
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
 Ext.define('CesiumExt.data.store.DataSourceStore', {
-    extend: 'Ext.data.Store',
+    extend: 'CesiumExt.data.store.BaseStore',
     requires: [
-		'Ext.data.Store',
+		'CesiumExt.data.store.BaseStore',
         'CesiumExt.data.model.DataSourceModel'
     ],
 
     mixins: [
-        //'GeoExt.mixin.SymbolCheck'
+        
     ],
 
     // <debug>
@@ -40,23 +40,15 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 	
 	config: {
 		/**
-         * A configured map/overview map component or a configuration object for the map constructor.
-         *
-         * @cfg {CesiumExt.map.Map/CesiumExt.map.OverviewMap/Object} cesiumMap
-         */
-		cesiumMap: null,
-		/**
          * A configured Cesium DataSourceCollection
          *
          * @cfg {Cesium.DataSourceCollection} cesiumDataSourceCollection
          */
 		cesiumDataSourceCollection: null,
-		/**
-         * A configured array of Cesium DataSources
-         *
-         * @cfg {Cesium.DataSource[]} cesiumDataSources
-         */
-		cesiumDataSources: []
+	},
+	
+	getCesiumDataSourceCollection() {
+		return this.cesiumCollection;
 	},
 	
 	
@@ -68,11 +60,14 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
     constructor: function(config) {
 		var me = this;
         config = config || {};
-		me.callParent([config]);
+		
+		var cesiumCollection = config.cesiumDataSourceCollection;
+		delete config.cesiumDataSourceCollection;
+		me.callParent([config, cesiumCollection]);
 		
 		me.initDataSourceCollection(config);
-		me.addCesiumToStoreListeners();
-		me.addStoreToCesiumListeners();
+		me.bindCesiumCollectionEvents();
+		me.bindStoreEvents();
     },
 	
 	/**
@@ -86,45 +81,38 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 		var me = this;
 		config = config || {};
 		
-		//initialize the Cesium DataSourceCollection
-		if(config.cesiumMap) {
-			me.cesiumDataSourceCollection = config.cesiumMap.getViewer().dataSources;
-		}
-		else if(config.cesiumDataSourceCollection) {
-			me.cesiumDataSourceCollection = config.cesiumDataSourceCollection;
-		}
-		else if(config.cesiumDataSources) {
-			me.cesiumDataSourceCollection = new Cesium.DataSourceCollection();
-			for(var i = 0; i < config.cesiumDataSources.length; ++i) {
-				me.cesiumDataSourceCollection.add(config.cesiumDataSources[i]);
-			}
-		}
 		//load raw Cesium.DataSource data in the store
-		if(me.cesiumDataSourceCollection) {
-			for(var i = 0; i < me.cesiumDataSourceCollection.length; ++i) {
-				 me.loadRawData(me.cesiumDataSourceCollection.get(i), true);
+		if(me.getCesiumDataSourceCollection()) {
+			for(var i = 0; i < me.getCesiumDataSourceCollection().length; ++i) {
+				 me.loadRawData(me.getCesiumDataSourceCollection().get(i), true);
 			}
 		}
 	},
 	
+	
 	/**
-	* Add listeners to forward changes FROM Cesium TO DataStore
-	*/
-	addCesiumToStoreListeners: function() {
+     * A utility method which binds the events fired FROM the 
+     * Cesium ImageryLayerCollection associated TO this store
+     *
+     * @private
+     */
+	bindCesiumCollectionEvents: function() {
 		var me = this;
 		
 		if(me.getCesiumDataSourceCollection()) {
 			// add listeners to forward changes(add/remove dataSource) from the cesium dataSourceCollection to DataStore
-			me.cesiumDataSourceCollection.dataSourceAdded.addEventListener(me.onCesiumDataSourceAdded, me);
-			me.cesiumDataSourceCollection.dataSourceRemoved.addEventListener(me.onCesiumDataSourceRemoved, me);
-			me.cesiumDataSourceCollection.dataSourceMoved.addEventListener(me.onCesiumDataSourceMoved, me);
+			me.getCesiumDataSourceCollection().dataSourceAdded.addEventListener(me.onCesiumDataSourceAdded, me);
+			me.getCesiumDataSourceCollection().dataSourceRemoved.addEventListener(me.onCesiumDataSourceRemoved, me);
+			me.getCesiumDataSourceCollection().dataSourceMoved.addEventListener(me.onCesiumDataSourceMoved, me);
 		}
 	},
 	
 	/**
-	* Add listeners to forward changes FROM DataStore TO Cesium.
-	*/
-	addStoreToCesiumListeners: function() {
+     * An utility method which binds change events fired FROM this store
+     *
+     * @private
+     */
+	bindStoreEvents: function() {
 		var me = this;
 		
 		 me.on({
@@ -177,7 +165,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
     onCesiumDataSourceRemoved: function(dataSourceCollection, dataSource) {
         var me = this;
 		if (!me._removing) {
-			var record = me.getRecordByDataSource(dataSource);
+			var record = me.getRecordByCesiumObject(dataSource);
 			if(record) {
 				me._removing = true;
 				me.remove(record);
@@ -200,7 +188,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
     onCesiumDataSourceMoved: function(dataSource, newIdx, oldIdx) {
 		if(newIdx === oldIdx) return;
         var me = this;
-		var dataSourceCollection = me.cesiumDataSourceCollection;
+		var dataSourceCollection = me.getCesiumDataSourceCollection();
 		if(!me._removing) {
 			me._removing = true;
 			var record = me.getAt(oldIdx);
@@ -287,7 +275,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 					//REMARK: datasource added at the end. Code must be modified to re-order
 					//the inserted datSources in the dataSource Collection
 					//also to handle the promise.
-					me.cesiumDataSourceCollection.add(dataSource);
+					me.getCesiumDataSourceCollection().add(dataSource);
 				}
             }
             delete me._adding;
@@ -307,7 +295,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 		var me = this;
 		var dataSource = oldRecord.getCesiumDataSource();
 		
-		me.getCesiumDataSourceCollection.remove(dataSource, true);
+		me.getCesiumDataSourceCollection().remove(dataSource, true);
     },
 	
 	/**
@@ -333,7 +321,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
                 dataSource = record.getCesiumDataSource();
 				if(me.getCesiumDataSourceCollection().contains(dataSource)) {
 					me._removing = true;
-					me.getCesiumDataSourceCollectiom.remove(dataSource, true);
+					me.getCesiumDataSourceCollection().remove(dataSource, true);
 					delete me._removing;
 				}
             }
@@ -371,15 +359,14 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 		}
     },
 	
-	 /**
-     * @inheritdoc
+	/**
+     * An implementation for the abstract method which unbinds events fired 
+	 * FROM this store
+     *
+     * @private
      */
-    destroy: function() {
+	unbindStoreEvents: function() {
 		var me = this;
-		
-		me.cesiumDataSourceCollection.dataSourceAdded.removeEventListener(me.onCesiumDataSourceAdded);
-		me.cesiumDataSourceCollection.dataSourceRemoved.removeEventListener(me.onCesiumDataSourceRemoved);
-		me.cesiumDataSourceCollection.dataSourceMoved.removeEventListener(me.onCesiumDataSourceMoved, me);
 		
 		me.un('load', me.onLoad, me);
         me.un('clear', me.onClear, me);
@@ -388,64 +375,27 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
         me.un('update', me.onUpdate, me);
 
         me.data.un('replace', me.onReplace, me);
-		
-        delete this.cesiumDataSourceCollection;
-        this.callParent(arguments);
-    },
+	},
 	
 	/**
-     * Get the record for the specified Cesium.DataSource.
+     * An implementation for the abstract method which unbinds collection events fired 
+	 * FROM the Cesium ImageryLayerCollection associated to this store
      *
-     * @param {Cesium.DataSource} dataSource The dataSource to get a model instance for.
-     * @return {Ext.data.Model} The corresponding model instance or undefined if
-     *     not found.
-     */
-    getRecordByDataSource: function(dataSource) {
-        var index = this.findBy(function(r) {
-            return r.getCesiumDataSource() === dataSource;
-        });
-        if (index > -1) {
-            return this.getAt(index);
-        }
-    },
-	
-	/**
-     * Overload loadRecords to set a flag if `addRecords` is `true` in the load
-     * options. ExtJS does not pass the load options to "load" callbacks, so
-     * this is how we provide that information to `onLoad`.
-     *
-     * @param {Ext.data.Model[]} records The array of records to load.
-     * @param {Object} options The loading options.
-     * @param {Boolean} [options.addRecords=false] Pass `true` to add these
-     *     records to the existing records, `false` to remove the Store's
-     *     existing records first.
      * @private
      */
-    loadRecords: function(records, options) {
-        if (options && options.addRecords) {
-            this._addRecords = true;
-        }
-        this.callParent(arguments);
-    },
+    unbindCesiumCollectionEvents: function() {
+		var me = this;
+		
+		me.getCesiumDataSourceCollection().dataSourceAdded.removeEventListener(me.onCesiumDataSourceAdded);
+		me.getCesiumDataSourceCollection().dataSourceRemoved.removeEventListener(me.onCesiumDataSourceRemoved);
+		me.getCesiumDataSourceCollection().dataSourceMoved.removeEventListener(me.onCesiumDataSourceMoved, me);
+	},
 	
 	 /**
      * @inheritdoc
-     *
-     * The event firing behaviour of Ext.4.1 is reestablished here. See also:
-     * [This discussion on the Sencha forum](http://www.sencha.com/forum/
-     * showthread.php?253596-beforeload-is-not-fired-by-loadRawData).
      */
-	 
-    loadRawData: function(data, append) {
-        var me = this;
-        var result = me.proxy.reader.read(data);
-        var records = result.records;
-
-        if (result.success) {
-            me.totalCount = result.total;
-            me.loadRecords(records, append ? me.addRecordsOptions : undefined);
-            me.fireEvent('load', me, records, true);
-        }
+    destroy: function() {
+        this.callParent(arguments);
     }
 	
 	

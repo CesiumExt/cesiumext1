@@ -72,7 +72,6 @@ Ext.define('CesiumExt.util.TreeNode', {
 					break;
 				}
 			}
-
             return index;
         }
     }

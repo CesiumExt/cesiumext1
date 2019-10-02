@@ -26,7 +26,7 @@
     extend: 'Ext.data.TreeStore',
 
     requires: [
-        //'GeoExt.util.Layer'
+       'CesiumExt.util.TreeNode'
     ],
 
     mixins: [
@@ -41,16 +41,11 @@
 
     model: 'CesiumExt.data.model.ImageryLayerTreeModel',
 	
-	 config: {
+	config: {
         /**
-         * Array of CesiumExt.data.store.ImageryLayerTreeModels
-		 * to be added in the store.
-         *
-         * @cfg {CesiumExt.data.store.ImageryLayerTreeModel[]}
+         * The Cesium Imagery Layer Collection to be binded to this store 
+         * @cfg {Cesium.ImageryLayerCollection}
          */
-        imageryLayerTreeModel: null,
-		
-		
 		cesiumImageryLayerCollection: null,
 
         /**
@@ -83,15 +78,6 @@
          */
         KEY_COLLAPSE_REMOVE_OPT_OUT: '__remove_by_collapse__'
     },
-	
-	 /**
-     * Defines if the order of the layers added to the store will be
-     * reversed. The default behaviour and what most users expect is
-     * that mapLayers on top are also on top in the tree.
-     *
-     * @property {Boolean}
-     */
-    inverseLayerOrder: false,
 	
 	 /**
      * Whether the treestore currently shall handle Cesium collection
@@ -135,13 +121,44 @@
         me.bindCesiumCollectionEvents();
 		
 		//bind handler events from the store
+		me.bindStoreEvents();
+    },
+	
+	/**
+     * A utility method which binds change events FROM this store
+     * TO cesium ImageryLayerCollection
+     *
+     * @private
+     */
+	bindStoreEvents: function() {
+		var me = this;
+		
+		//bind handler events from the store
         me.on({
             remove: me.handleRemove,
             noderemove: me.handleNodeRemove,
+			nodemove: me.handleNodeMove,
             nodeappend: me.handleNodeAppend,
             nodeinsert: me.handleNodeInsert,
             scope: me
         });
+	},
+	
+	/**
+     * A utility method which binds collection change events FROM the 
+     * cesium ImageryLayerCollection related to this store
+     *
+     * @private
+     */
+    bindCesiumCollectionEvents: function() {
+		 var me = this;
+		// add listeners to forward changes(add/remove Imagery Layer) from the cesium imageryLayerCollection to ImageryLayer Store
+		if(me.getCesiumImageryLayerCollection()) {
+			me.getCesiumImageryLayerCollection().layerAdded.addEventListener(me.onCesiumImageryLayerAdded, me);
+			me.getCesiumImageryLayerCollection().layerRemoved.addEventListener(me.onCesiumImageryLayerRemoved, me);
+			me.getCesiumImageryLayerCollection().layerMoved.addEventListener(me.onCesiumImageryLayerMoved, me);
+			me.getCesiumImageryLayerCollection().layerShownOrHidden.addEventListener(me.onCesiumImageryLayerShownOrHidden, me);
+		}
     },
 	
 	/**
@@ -169,7 +186,8 @@
     },
 	
 	/**
-     * Listens to the `remove` event and syncs the attached layergroup.
+     * Listens to the `remove` event and syncs the attached cesium Imagery Layer
+	 * Collection.
      *
      * @param {CesiumExt.data.store.ImageryLayerTreeStore} store The layer store.
      * @param {CesiumExt.data.model.ImageryLayerTreeModel[]} records An array of the
@@ -177,6 +195,7 @@
      * @private
      */
     handleRemove: function(store, records, index, isMove, eOpts) {
+		if(isMove) return;
         var me = this;
         var keyRemoveOptOut = me.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
 		
@@ -208,6 +227,52 @@
         me.resumeCollectionEvents();
     },
 	
+	/**
+     * Listens to the `nodemove` event and update the position of the cesium imagery
+	 * layers based on the new relative position of these layers in the nodes
+     *
+     * @param {Ext.data.NodeInterface} node The moved node.
+	 * @param {Ext.data.NodeInterface} oldParent The old parent of this node.
+	 * @param {Ext.data.NodeInterface} newParent The new parent of this node.
+	 * @param {Number} index The index it was moved to
+     * @param {Object} eOpts The options object passed to Ext.util.Observable.addListener.
+     * @private
+    */
+	handleNodeMove: function(node, oldParent, newParent, index, eOpts) {
+		var me = this;
+		//get all the layers
+		var lyrs = [];
+		var imageryLayerCollection = me.getCesiumImageryLayerCollection();
+		//cache all layers in a array
+		for(var i = 0; i < imageryLayerCollection.length; ++i) {
+			lyrs.push(imageryLayerCollection.get(i));
+		}
+		//re-order all the layers based on its position in the tree node
+		for(var i = 0; i < lyrs.length; ++i) {
+			var curImageryLayer = lyrs[i];
+			//retrieve the node for that layer
+			var curNode = me.getRootNode().findChildBy(function(candidate) {
+				return (candidate.getCesiumImageryLayer() === curImageryLayer);
+			}, me, true);
+			if(curNode) {
+				var result = me.getOverallNodeIndex(me.getRoot(), curNode);
+				var isFound = result[1];
+				var newIdx = result[0];
+				if(isFound) { 
+					var curIdx = imageryLayerCollection.indexOf(curImageryLayer);
+					if(curIdx !== newIdx) {
+						//move layer
+						me.suspendCollectionEvents();
+						var isRemoved = imageryLayerCollection.remove(curImageryLayer, false);
+						imageryLayerCollection.add(curImageryLayer, newIdx);
+						me.resumeCollectionEvents();
+					}
+				}		
+			}
+		}
+	},
+	
+	
 	 /**
      * Listens to the `noderemove` event. Updates the tree with the current
      * map state.
@@ -217,6 +282,7 @@
      * @private
      */
 	handleNodeRemove: function(parentNode, removedNode, isMove, context, eOpts) {
+		if(isMove) return;
 		var me = this;
 		
 		//remove parent node if it is an empty folder
@@ -238,14 +304,15 @@
 			else
 				cesiumImageryLayerColl.remove(cesiumImageryLayer, true);
 		}
-		//else if(removedNode.hasChildNodes() || removedNode.isRoot()) {
 		else {
-			removedNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
-			removedNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
-			
-			var childNodes = removedNode.childNodes;
-			for(var i = 0; i < childNodes.length; ++i) {
-				me.handleNodeRemove(parentNode, childNodes[i], isMove, context, eOpts);
+			if(!isMove) {
+				removedNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
+				removedNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
+				
+				var childNodes = removedNode.childNodes;
+				for(var i = 0; i < childNodes.length; ++i) {
+					me.handleNodeRemove(parentNode, childNodes[i], isMove, context, eOpts);
+				}
 			}
 		}
 		me.resumeCollectionEvents();
@@ -274,14 +341,9 @@
 		if(cesiumImageryLayerColl.contains(imageryLayer))
 			return;
 		//add the imagery layer in the collection
-		 me.suspendCollectionEvents();
-		 if(me.inverseLayerOrder) {
-			 cesiumImageryLayerColl.add(imageryLayer, 0);
-		 }
-		 else {
-			 cesiumImageryLayerColl.add(imageryLayer);
-		 }
-		 me.resumeCollectionEvents();
+		me.suspendCollectionEvents();
+		cesiumImageryLayerColl.add(imageryLayer);
+		me.resumeCollectionEvents();
     },
 	
 	/**
@@ -309,9 +371,6 @@
 		
 		var beforeIdx = CesiumExt.util.TreeNode.getIndex(beforeImagerylayer, parentNode);
 		var insertIdx = beforeIdx;
-		if (me.inverseLayerOrder) {
-            insertIdx += 1;
-        }
 		
 		 // check if the imageryLayer is possibly already in the collection
 		if(cesiumImageryLayerColl.contains(imageryLayer))
@@ -349,13 +408,33 @@
 			var cesiumImageryLayerColl = me.getCesiumImageryLayerCollection();
 			
 			var idx = cesiumImageryLayerColl.indexOf(imagerylayer);
-			// the index must probably be changed because of inverseLayerOrder
-			// TODO Check
-			if (me.inverseLayerOrder) {
-				var totalInGroup = cesiumImageryLayerColl.length;
-				idx = totalInGroup - idx - 1;
-			}
 			node = parentNode.insertChild(idx, node);
+			if(parentNode.isRoot()) {
+				//remove and re-insert events to avoid to register multiple times
+				parentNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
+				parentNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
+				
+				parentNode.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
+				parentNode.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
+			}
+		}
+    },
+	
+	insertBeforeNode: function(node, afterNode) {
+		var me = this;
+		var parentNode =  afterNode.parentNode;
+		
+		if(!node.getCesiumImageryLayer()) {
+			parentNode.insertBefore(node, afterNode);
+			node.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
+            node.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
+			
+		}
+		else {
+			var imagerylayer = node.getCesiumImageryLayer();
+			var cesiumImageryLayerColl = me.getCesiumImageryLayerCollection();
+			
+			node = parentNode.insertBefore(node, afterNode);
 			if(parentNode.isRoot()) {
 				//remove and re-insert events to avoid to register multiple times
 				parentNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
@@ -385,38 +464,9 @@
         });
     },
 	
-	/**
-     * A utility method which binds collection change events FROM the 
-     * cesium ImageryLayerCollection related to this store
-     *
-     * @private
-     */
-    bindCesiumCollectionEvents: function() {
-		 var me = this;
-		// add listeners to forward changes(add/remove Imagery Layer) from the cesium imageryLayerCollection to ImageryLayer Store
-		if(me.getCesiumImageryLayerCollection()) {
-			me.getCesiumImageryLayerCollection().layerAdded.addEventListener(me.onCesiumImageryLayerAdded, me);
-			me.getCesiumImageryLayerCollection().layerRemoved.addEventListener(me.onCesiumImageryLayerRemoved, me);
-			me.getCesiumImageryLayerCollection().layerMoved.addEventListener(me.onCesiumImageryLayerMoved, me);
-			me.getCesiumImageryLayerCollection().layerShownOrHidden.addEventListener(me.onCesiumImageryLayerShownOrHidden, me);
-		}
-    },
 	
-	/**
-     * A utility method which unbinds collection change events FROM the passed
-     * cesium ImageryLayerCollection.
-     *
-     * @private
-     */
-    unbindCesiumCollectionEvents: function() {
-        var me = this;
-		if(me.getCesiumImageryLayerCollection()) {
-			me.getCesiumImageryLayerCollection().layerAdded.removeEventListener(me.onCesiumImageryLayerAdded);
-			me.getCesiumImageryLayerCollection().layerRemoved.removeEventListener(me.onCesiumImageryLayerRemoved);
-			me.getCesiumImageryLayerCollection().layerMoved.removeEventListener(me.onCesiumImageryLayerMoved, me);
-			me.getCesiumImageryLayerCollection().layerShownOrHidden.removeEventListener(me.onCesiumImageryLayerShownOrHidden, me);
-		}
-    },
+	
+	
 	
 	/**
      * Handles the `add` event of a managed `Cesium.ImageryLayerCollection` and eventually
@@ -433,8 +483,10 @@
             return;
         }
 		
+		me.suspendCollectionEvents();
 		var node = me.proxy.reader.read(imageryLayer);
 		me.addNode(node, me.getRoot());
+		me.resumeCollectionEvents();
     },
 	
 	/**
@@ -452,7 +504,7 @@
             return;
         }
         
-		 me.suspendCollectionEvents();
+		me.suspendCollectionEvents();
 		
         // 1. find the node that existed for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
@@ -468,6 +520,33 @@
 		
 		me.resumeCollectionEvents();
     },
+	
+	/**
+	 * Find the node after the node related to imageryLayer
+     *
+	 * @param {Cesium.ImageryLayer} imageryLayer. The imagery layer for the node
+	 * @return {Ext.data.NodeInterface} the node after this `node`
+     * @private
+     */
+	findAfterNodeByLayer: function(imageryLayer) {
+		var me = this;
+		var imageryLayerCollection = me.cesiumImageryLayerCollection;
+		var idx = imageryLayerCollection.indexOf(imageryLayer);
+		var afterIdx = idx + 1;
+		var afterNode;
+		
+		if(afterIdx === imageryLayerCollection.length)
+			afterNode = null;
+		else {
+			var afterImageryLayer = imageryLayerCollection.get(afterIdx);
+			 afterNode = me.getRootNode().findChildBy(function(candidate) {
+				return (candidate.getCesiumImageryLayer() === afterImageryLayer);
+			}, me, true);
+			if(!afterNode) afterNode = null;
+		}
+		return afterNode;
+	},
+	
 	
 	/**
      * Forwards changes from the `Cesium.ImageryLayerCollection` to the Ext.data.Store if
@@ -489,6 +568,8 @@
             return;
         }
 		
+		me.suspendCollectionEvents();
+		
 		// 1. find the node for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
             return (candidate.getCesiumImageryLayer() === imageryLayer);
@@ -496,16 +577,28 @@
         if (!node) {
             return;
         }
-		// 2. find its  parent node
-        var parent = node.parentNode;
-        // 3. remove the node from the parent
-        parent.removeChild(node);
-		// 4. re-add the node in the new position
-		me.addNode(node, me.getRoot());
 		
-		//TODO: to check if it is needed:
+		// 2. find the node after it
+		var afterNode = me.findAfterNodeByLayer(imageryLayer);
+		
+		// 3. find its  parent node
+        var parent = node.parentNode;
+        // 4. remove the node from the parent
+        parent.removeChild(node);
+		// 5. re-add the node in the new position
+		if(afterNode)
+			me.insertBeforeNode(node, afterNode);
+		else
+			me.addNode(node, parent);
+		//me.addNode(node, me.getRoot());
+		
+		me.resumeCollectionEvents();
+		
+		//TODO: to check if it is needed to update the row column values:
 		//me.fireEvent('update', this, record, Ext.data.Record.EDIT, null, {});
     },
+	
+	
 	
 	/**
      * Forwards changes from the `Cesium.ImageryLayerCollection` to the Ext.data.Store if
@@ -552,15 +645,71 @@
         this.collectionEventsSuspended = false;
     },
 	
+	
+	getOverallNodeIndex: function(startNode, node, startIndex = -1) {
+		var me = this;
+		//just search index for the node having layer
+		if(!node.getCesiumImageryLayer && !node.getCesiumImageryLayer())
+			return [-1, false];
+			
+		var isFound = false;
+		if(startNode.getCesiumImageryLayer && startNode.getCesiumImageryLayer()) {
+			startIndex = startIndex + 1;
+			if(startNode === node) {
+				return [startIndex, true];
+			}
+		}
+		var childNodes = startNode.childNodes;
+		for(var i = 0; i < childNodes.length; ++i) {
+			var result = me.getOverallNodeIndex(childNodes[i], node, startIndex);
+			startIndex = result[0];
+			isFound = result[1];
+			if(isFound) break;
+		}
+		return [startIndex, isFound];
+	},
+	
+	/**
+     * A utility method which unbinds collection change events FROM the passed
+     * cesium ImageryLayerCollection.
+     *
+     * @private
+     */
+    unbindCesiumCollectionEvents: function() {
+        var me = this;
+		if(me.getCesiumImageryLayerCollection()) {
+			me.getCesiumImageryLayerCollection().layerAdded.removeEventListener(me.onCesiumImageryLayerAdded);
+			me.getCesiumImageryLayerCollection().layerRemoved.removeEventListener(me.onCesiumImageryLayerRemoved);
+			me.getCesiumImageryLayerCollection().layerMoved.removeEventListener(me.onCesiumImageryLayerMoved, me);
+			me.getCesiumImageryLayerCollection().layerShownOrHidden.removeEventListener(me.onCesiumImageryLayerShownOrHidden, me);
+		}
+    },
+	
+	/**
+     * A utility method which unbinds change events FROM store
+     *
+     * @private
+     */
+	unbindStoreEvents: function() {
+		var me = this;
+		
+		me.un('remove', me.handleRemove, me);
+        me.un('noderemove', me.handleNodeRemove, me);
+		me.un('nodemove', me.handleNodeMove, me);
+        me.un('nodeappend', me.handleNodeAppend, me);
+        me.un('nodeinsert', me.handleNodeInsert, me);
+	},
+	
 	/**
      * @inheritdoc
      */
     destroy: function() {
 		var me = this;
 		unbindCesiumCollectionEvents();
-		
+
 		me.un('remove', me.handleRemove, me);
         me.un('noderemove', me.handleNodeRemove, me);
+		me.un('nodemove', me.handleNodeMove, me);
         me.un('nodeappend', me.handleNodeAppend, me);
         me.un('nodeinsert', me.handleNodeInsert, me);
 	}

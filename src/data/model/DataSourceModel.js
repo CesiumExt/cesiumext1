@@ -108,6 +108,10 @@
 		return this.cesiumObject;
     },
 	
+	setCesiumDataSource: function(dataSource) {
+		this.cesiumObject = dataSource;
+    },
+	
 	/**
      * Listener to changedEvent events of the underlying `Cesium.DataSource`. All
      * changes on the Cesium.DataSource object will be forwarded changes to the CesiumExt.data.model.DataSourceModel.
