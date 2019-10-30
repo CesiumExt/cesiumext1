@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-Today CesiumExt
+/* Copyright (c) 2019-Present CesiumExtJS
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,36 +14,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
- * Abstract class; normally only used for creating subclasses 
- * and not instantiated in the application.
- * Base class for the Interaction functionalities.
- * @class CesiumExt.interaction.Interaction
+ * Abstract class only used for creating subclasses and not instantiated in apps.
+ * Base class for WFS GetFeature property comparison filters.
+ *
+ * @class CesiumExt.format.filter.Comparison
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
-Ext.define('CesiumExt.interaction.Interaction', {
-    extend: 'Ext.Base',
-	//mixins: ['Ext.mixin.Observable'],
-	mixins: {
-        observable : 'Ext.util.Observable'
-    },
+Ext.define('CesiumExt.format.filter.Comparison', {
+    extend:'CesiumExt.format.filter.AbstractFilter',
+	
 	
 	config: {
-		viewer: null
+		/**
+		* The xml property name
+		* @cfg {String} propertyName
+		*/
+		propertyName: null
 	},
 	
-	
 	/**
-	* @param {Object} The configuration object for this Interaction.
-	* @inheritdoc
+	* Constructor method
+	* @param {String} tagName The XML tag name for this filter.
+	* @param {String} propertyName Name of the context property to compare.
 	*/
 	constructor: function(config) {
 		var me = this;
-        config = config || {};
+		config = config || {};
 		me.callParent([config]);
 		me.initConfig(config);
-		this.mixins.observable.constructor.call(this, config);
     },
 	
 });
+

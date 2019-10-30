@@ -40,6 +40,7 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
             horizontalOrigin : Cesium.HorizontalOrigin.LEFT,
             verticalOrigin : Cesium.VerticalOrigin.TOP,
             pixelOffset : new Cesium.Cartesian2(15, 0),
+			disableDepthTestDistance: Number.POSITIVE_INFINITY
         }
 	},
 	

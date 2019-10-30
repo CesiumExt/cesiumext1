@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-Today CesiumExt
+/* Copyright (c) 2019-Present CesiumExtJS
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,36 +14,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
- * Abstract class; normally only used for creating subclasses 
- * and not instantiated in the application.
- * Base class for the Interaction functionalities.
- * @class CesiumExt.interaction.Interaction
+ * Represents a `<During>` comparison operator.
+ *
+ * @class CesiumExt.format.filter.During
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
-Ext.define('CesiumExt.interaction.Interaction', {
-    extend: 'Ext.Base',
-	//mixins: ['Ext.mixin.Observable'],
-	mixins: {
-        observable : 'Ext.util.Observable'
-    },
-	
-	config: {
-		viewer: null
-	},
+Ext.define('CesiumExt.format.filter.During', {
+    extend:'CesiumExt.format.filter.Comparison',
 	
 	
 	/**
-	* @param {Object} The configuration object for this Interaction.
-	* @inheritdoc
+	 * @type {String}
 	*/
-	constructor: function(config) {
-		var me = this;
-        config = config || {};
-		me.callParent([config]);
-		me.initConfig(config);
-		this.mixins.observable.constructor.call(this, config);
-    },
+	begin: null,
 	
+	/**
+     * @type {String}
+	*/
+	end: null,
+	
+	/**
+	* @constructor
+	* @param {String} propertyName Name of the context property to compare.
+	* @param {String} begin The begin date in ISO-8601 format.
+	* @param {String} end The end date in ISO-8601 format.
+	*/
+	constructor: function(propertyName, begin, end) {
+		this.callParent(['During', propertyName]);
+		this.begin = begin;
+		this.end = end;
+    },
 });
+

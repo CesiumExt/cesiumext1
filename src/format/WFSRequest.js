@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-Today CesiumExt
+/* Copyright (c) 2019-Present CesiumExtJS
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,36 +14,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
- * Abstract class; normally only used for creating subclasses 
- * and not instantiated in the application.
- * Base class for the Interaction functionalities.
- * @class CesiumExt.interaction.Interaction
+ * Abstract Class that represents the WFS Request
+ *
+ * @class CesiumExt.format.WFSRequest
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
-Ext.define('CesiumExt.interaction.Interaction', {
-    extend: 'Ext.Base',
-	//mixins: ['Ext.mixin.Observable'],
-	mixins: {
-        observable : 'Ext.util.Observable'
-    },
+Ext.define('CesiumExt.format.WFSRequest', {
+	extend: 'Ext.Base',
 	
-	config: {
-		viewer: null
+	inheritableStatics: {
+		DEFAULT_VERSION: '1.1.0',
+		OGCNS: 'http://www.opengis.net/ogc',
+		WFSNS: 'http://www.opengis.net/wfs',
+		FESNS: 'http://www.opengis.net/fes',
+		GMLNS: 'http://www.opengis.net/gml'
 	},
 	
-	
-	/**
-	* @param {Object} The configuration object for this Interaction.
-	* @inheritdoc
-	*/
 	constructor: function(config) {
 		var me = this;
-        config = config || {};
+		config = config || {};
 		me.callParent([config]);
 		me.initConfig(config);
-		this.mixins.observable.constructor.call(this, config);
-    },
-	
+    }
 });

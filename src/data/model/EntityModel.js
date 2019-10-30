@@ -85,7 +85,7 @@ Ext.define('CesiumExt.data.model.EntityModel', {
      * changes on the object will be forwarded to the Ext.data.Model.
      *
      * @param  {Cesium.Entity} entity The `Cesium.Entity` on which the property was changed.
-	 * @param  {string} propertyName. The changed property name.
+	 * @param  {String} propertyName. The changed property name.
 	 * @param  {*} newValue. The new value of the changed property.
 	 * @param  {*} oldValue. The old value of the changed property.
      * @private
@@ -96,6 +96,7 @@ Ext.define('CesiumExt.data.model.EntityModel', {
         if (!me.__updating) {
 			me.__updating = true;
 			var propertyNames = me.getCesiumEntity().properties.propertyNames;
+			//to use: viewer.clock.currentTime
 			var jsonProperties = propertyBag.getValue(Cesium.JulianDate.now());
 			me.set(jsonProperties);
 			me.__updating = false;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-Today CesiumExt
+/* Copyright (c) 2019-Present CesiumExtJS
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,36 +14,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
- * Abstract class; normally only used for creating subclasses 
- * and not instantiated in the application.
- * Base class for the Interaction functionalities.
- * @class CesiumExt.interaction.Interaction
+ * Class representing the logical `<And>` operator between two or more 
+ * filter conditions.
+ *
+ * @class CesiumExt.format.filter.And
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
-Ext.define('CesiumExt.interaction.Interaction', {
-    extend: 'Ext.Base',
-	//mixins: ['Ext.mixin.Observable'],
-	mixins: {
-        observable : 'Ext.util.Observable'
-    },
-	
-	config: {
-		viewer: null
-	},
-	
+Ext.define('CesiumExt.format.filter.And', {
+    extend: 'CesiumExt.format.filter.LogicalNary',
 	
 	/**
-	* @param {Object} The configuration object for this Interaction.
-	* @inheritdoc
+	* The constructor method.
+	* @constructor
+	* @param {Object} conditions The config 
+	*	object having the filter conditions.
 	*/
 	constructor: function(config) {
 		var me = this;
-        config = config || {};
+		config = config || {};
+		config.tagName = 'And';
+		
 		me.callParent([config]);
 		me.initConfig(config);
-		this.mixins.observable.constructor.call(this, config);
     },
-	
 });
+

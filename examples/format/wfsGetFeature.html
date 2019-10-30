@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>CesiumExt.data.interaction.Interaction Examples</title>
-	<link rel="stylesheet" href="https://cesiumjs.org/releases/1.61/Build/Cesium/Widgets/widgets.css">
+    <title>CesiumExt WFS GetFeature Request and OGC Filter Examples</title>
+	<link rel="stylesheet" href="https://cesiumjs.org/releases/1.62/Build/Cesium/Widgets/widgets.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
 	<!-- Style our Cesium app. -->
 	<link rel="stylesheet" href="index.css" media="screen">
@@ -12,19 +12,21 @@
 <body>
     <div id='description'>
         <p>
-            This example shows how to use different interactions derived from <code><b>CesiumExt.interaction.Interaction</b></code> abstract class.
-            abstract class:
+            This example shows how to build a WFS GetFeature Request through <code><b>CesiumExt.format.WFSGetFeature</b></code> using
+			different OGC Filters available on namespace <code><b>CesiumExt.format.filter</b></code>
         </p>
 		<ul>
+		<!--
 			<li><code><b>CesiumExt.interaction.GetPositionInteraction</b></code> retrieves the coordinate position based on mouse click</li>
 			<li><code><b>CesiumExt.interaction.GetRectangleInteraction</b></code> retrieves the rectangle based on mouse click + drag</li>
+		-->
 		</ul>
         <p>
-            Have a look at <a href="interaction.js">interaction.js</a> to see how this is done.
+            Have a look at <a href="wfsGetFeature.js">wfsGetFeature.js</a> to see how this is done.
         </p>
     </div>
 	
-    <script src="https://cesiumjs.org/releases/1.61/Build/Cesium/Cesium.js"></script>
+    <script src="https://cesiumjs.org/releases/1.62/Build/Cesium/Cesium.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
     <script>
 		// REMARK: to create your application, add your ion access token from cesium.com/ion/
@@ -37,6 +39,6 @@
             }
         });
     </script>
-    <script src="interaction.js"></script>
+    <script src="wfsGetFeature.js"></script>
 </body>
 </html>

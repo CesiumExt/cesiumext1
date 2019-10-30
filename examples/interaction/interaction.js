@@ -16,6 +16,8 @@ Ext.require([
     'Ext.form.Panel',
 	'Ext.window.Window',
 	'CesiumExt.map.Map',
+	'CesiumExt.interaction.GetPositionInteraction',
+	'CesiumExt.interaction.GetRectangleInteraction'
 ]);
 
 var toolbar;
@@ -45,6 +47,10 @@ Ext.application({
 						{
 							text : 'Get Position',
 							handler: getPosition
+						},
+						{
+							text : 'Draw Rectangle',
+							handler: drawRectangle
 						}
 					]
 				}
@@ -77,6 +83,29 @@ Ext.application({
         });
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
+		
+		function drawRectangle() {
+			var viewer = mapComponent.getViewer();
+			//create GetRectangle Interaction
+			var getRectangleInteraction = Ext.create('CesiumExt.interaction.GetRectangleInteraction',
+			{
+				viewer: viewer
+			});
+			getRectangleInteraction.on('drawend', drawRectangleHandler);
+			
+			function drawRectangleHandler(rectangleCoords) {
+				viewer.entities.add({
+					rectangle: {
+						material: Cesium.Color.YELLOW.withAlpha(0.3),
+						outline: true,
+						outlineColor: Cesium.Color.BLUE,
+						height: 0,
+						outlineWidth: 3,
+						coordinates: rectangleCoords
+					}
+				});
+			}
+		}
 		
 		function getPosition() {
 			var viewer = mapComponent.getViewer();
@@ -113,7 +142,7 @@ Ext.application({
 						xtype: 'textfield',
 						itemId: 'cartographicField',
 						name: 'cartographic',
-						value: cartographicPos.latitude + ',' + cartographicPos.longitude,
+						value: Cesium.Math.toDegrees(cartographicPos.latitude) + ',' + Cesium.Math.toDegrees(cartographicPos.longitude),
 						width: 500,
 						fieldLabel: 'Lat/Long ',
 						hideTrigger:true,

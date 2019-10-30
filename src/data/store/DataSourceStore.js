@@ -47,7 +47,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 		cesiumDataSourceCollection: null,
 	},
 	
-	getCesiumDataSourceCollection() {
+	getCesiumDataSourceCollection: function() {
 		return this.cesiumCollection;
 	},
 	

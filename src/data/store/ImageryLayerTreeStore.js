@@ -646,8 +646,10 @@
     },
 	
 	
-	getOverallNodeIndex: function(startNode, node, startIndex = -1) {
+	getOverallNodeIndex: function(startNode, node,  startIndex/*= -1*/) {
+		
 		var me = this;
+		if(!startIndex)  startIndex = -1;
 		//just search index for the node having layer
 		if(!node.getCesiumImageryLayer && !node.getCesiumImageryLayer())
 			return [-1, false];
