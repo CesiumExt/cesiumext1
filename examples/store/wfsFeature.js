@@ -25,9 +25,14 @@ Ext.require([
 var toolbar;
 var mapPanel;
 var descriptionPanel;
+var tabPanel;
 var mapComponent;
 var buildingsDataSource;
 var addressesDataSource;
+var previousSelectedBuilding;
+var previousSelectedBuildingMaterial;
+var previousSelectedAddress;
+var previousSelectedAddressColor;
 
 
 Ext.application({
@@ -67,6 +72,9 @@ Ext.application({
 			viewer.dataSources.add(buildingsDataSource);
 			addressesDataSource = new Cesium.GeoJsonDataSource('Addresses');
 			viewer.dataSources.add(addressesDataSource);
+			//create Building and Address Grid Panel
+			createBuildingFeatureGridPanel();
+			createAddressFeatureGridPanel();
 		});
 		
 		//create main menu toolbar
@@ -105,6 +113,16 @@ Ext.application({
             border: true,
             bodyPadding: 5
         });
+		
+		tabPanel = Ext.create('Ext.tab.Panel', {
+			bodyPadding: 5,
+			tabPosition: 'bottom',
+			height: 250,
+			resizable: true,
+			collapsible: true,
+			region: 'south',
+			items: []
+		});
 
         Ext.create('Ext.Viewport', {
             layout: 'border',
@@ -112,6 +130,7 @@ Ext.application({
 				toolbar,
                 mapPanel,
                 descriptionPanel,
+				tabPanel
             ]
         });
 		
@@ -232,6 +251,230 @@ Ext.application({
 					//
 				});   
 			}
+		}
+		
+		function createBuildingFeatureGridPanel() {
+			//retrieve the entities from the building datasource
+			var entities = buildingsDataSource.entities
+			//create store
+			var entityStore = Ext.create('CesiumExt.data.store.EntityStore', {
+				cesiumEntityCollection: entities
+			});
+			
+			var entityGridPanel = Ext.create('Ext.grid.Panel', {
+				title: 'Building Feature Grid Panel',
+				border: true,
+				region: 'center',
+				store: entityStore,
+				columns: [
+					{
+						text: 'BU_ID', 
+						dataIndex: 'BU_ID', 
+						sortable:true,
+						flex: 2,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'BU_CATEGORY', 
+						dataIndex: 'BU_CATEGORY', 
+						sortable:true,
+						flex: 1,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'BU_STATUS', 
+						dataIndex: 'BU_STATUS', 
+						sortable:true,
+						flex:1,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'BU_CAPAKEY', 
+						dataIndex: 'BU_CAPAKEY', 
+						sortable:true,
+						flex: 3,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'BU_INSPIRE_ID', 
+						dataIndex: 'BU_INSPIRE_ID', 
+						sortable:true,
+						flex: 4,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+				],
+				listeners: {
+					'selectionchange': function(grid, selected) {
+						//unhighlight previous selected
+						if(previousSelectedBuilding) {
+							previousSelectedBuilding.polygon.material = previousSelectedBuildingMaterial;
+						}
+						
+						//highlight selected
+						Ext.each(selected, function(rec) {
+							previousSelectedBuilding = rec.getCesiumEntity();
+							previousSelectedBuildingMaterial = rec.getCesiumEntity().polygon.material;
+							rec.getCesiumEntity().polygon.material = Cesium.Color.RED;
+						});
+					}
+				},
+					
+				selModel: 'rowmodel',
+				plugins: 
+				[
+					'gridfilters'
+				],
+
+				tbar:[
+				{
+					itemId: 'ZoomBtn',
+					text: 'Zoom',
+					 handler: function() {
+						var sm = entityGridPanel.getSelectionModel();
+						var record = sm.getSelection()[0];
+						if(record) {
+							var entity = record.getCesiumEntity();
+							mapComponent.getViewer().zoomTo(entity);
+						}
+					},
+				},
+				]
+			});
+			tabPanel.setCollapsed(false);
+			tabPanel.add(entityGridPanel).show();
+			tabPanel.setActiveTab(entityGridPanel);
+		}
+		
+		function createAddressFeatureGridPanel() {
+			//retrieve the entities from the address datasource
+			var entities = addressesDataSource.entities;
+			//create store
+			var entityStore = Ext.create('CesiumExt.data.store.EntityStore', {
+				cesiumEntityCollection: entities
+			});
+			
+			var entityGridPanel = Ext.create('Ext.grid.Panel', {
+				title: 'Address Feature Grid Panel',
+				border: true,
+				region: 'center',
+				store: entityStore,
+				columns: [
+					{
+						text: 'ADPT_ID', 
+						dataIndex: 'ADPT_ID', 
+						sortable:true,
+						flex: 2,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'ADPT_ADRN', 
+						dataIndex: 'ADPT_ADRN', 
+						sortable:true,
+						flex: 2,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'PN_NAME_FRE', 
+						dataIndex: 'PN_NAME_FRE', 
+						sortable:true,
+						flex:4,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'MU_NAME_FRE', 
+						dataIndex: 'MU_NAME_FRE', 
+						sortable:true,
+						flex: 4,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'PZ_NATIONAL_CODE', 
+						dataIndex: 'PZ_NATIONAL_CODE', 
+						sortable:true,
+						flex: 3,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+					{
+						text: 'ADPT_INSPIRE_ID', 
+						dataIndex: 'ADPT_INSPIRE_ID', 
+						sortable:true,
+						flex: 5,
+						editor: {
+							xtype: 'textfield',
+							allowBlank: false,
+						}
+					},
+				],
+				listeners: {
+					'selectionchange': function(grid, selected) {
+						//unhighlight previous selected
+						if(previousSelectedAddress) {
+							previousSelectedAddress.billboard.color = previousSelectedAddressColor;
+						}
+						
+						//highlight selected
+						Ext.each(selected, function(rec) {
+							previousSelectedAddress = rec.getCesiumEntity();
+							previousSelectedAddressColor = rec.getCesiumEntity().billboard.color;
+							rec.getCesiumEntity().billboard.color = Cesium.Color.RED;
+						});
+					}
+				},
+					
+				selModel: 'rowmodel',
+				plugins: 
+				[
+					'gridfilters'
+				],
+
+				tbar:[
+				{
+					itemId: 'ZoomBtn',
+					text: 'Zoom',
+					 handler: function() {
+						var sm = entityGridPanel.getSelectionModel();
+						var record = sm.getSelection()[0];
+						if(record) {
+							var entity = record.getCesiumEntity();
+							mapComponent.getViewer().zoomTo(entity);
+						}
+					},
+				},
+				]
+			});
+			tabPanel.setCollapsed(false);
+			tabPanel.add(entityGridPanel).show();
+			tabPanel.setActiveTab(entityGridPanel);
 		}
     }
 });
