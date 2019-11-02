@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>CesiumExt.data.store.ImageryLayerTreeStore Example</title>
+    <title>CesiumExt Example</title>
 	<link rel="stylesheet" href="https://cesiumjs.org/releases/1.63/Build/Cesium/Widgets/widgets.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
 	<!-- Style our Cesium app. -->
@@ -12,28 +12,13 @@
 <body>
     <div id='description'>
         <p>
-            This example shows how to use the <code><b>CesiumExt.data.store.ImageryLayerTreeStore</b></code>
-            class:
-        </p>
-		<ul>
-            <li>This Tree Panel allows to enable/disable the Imagery Layer Visibility</li>
-        </ul>
-		<ul>
-            <li>Drag&Drop is enabled to allow to change the order of the Imagery Layers</li>
-        </ul>
-		<ul>
-            <li>It is possible to group the Imagery Layers in different groups</li>
-        </ul>
-		<p>
-            <b>REMARK: </b>Still being implemented. So, please, be patient!!
-        </p>
-		
-        <p>
-            Have a look at <a href="imageryLayerTree.js">imageryLayerTree.js</a> to see how this is done.
+			This is just an example to show some functionalities in CesiumExt. Please, Check the examples 
+			in our <a href="https://cesiumext.github.io/cesiumext1/">web page</a> to see how
+			each component must be implemented!!
         </p>
     </div>
 	
-	<script src="https://cesiumjs.org/releases/1.63/Build/Cesium/Cesium.js"></script>
+    <script src="https://cesiumjs.org/releases/1.62/Build/Cesium/Cesium.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
     <script>
 		// REMARK: to create your application, add your ion access token from cesium.com/ion/
@@ -42,10 +27,10 @@
 		Ext.Loader.setConfig({
             enabled: true,
             paths: {
-                'CesiumExt': '../../src/'
+                'CesiumExt': '../src/'
             }
         });
     </script>
-    <script src="imageryLayerTree.js"></script>
+    <script src="mainExample.js"></script>
 </body>
 </html>

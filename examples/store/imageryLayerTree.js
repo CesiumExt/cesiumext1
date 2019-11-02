@@ -174,6 +174,28 @@ Ext.application({
 			
 		}
 		
+		function createBingImageryLayer() {
+			var viewer = mapComponent.getViewer();
+			var data = {
+				name: 'Bing Imagery Layer',
+				//data.iconUrl = '',
+				tooltip: 'Bing Aerial Imagery Layer',
+				//imageryLayers: viewer.imageryLayers,
+				creationFunction: function() {
+					var provider = new Cesium.BingMapsImageryProvider({
+						url : 'https://dev.virtualearth.net',
+						//please, get your key at https://www.bingmapsportal.com/
+						key : 'AtHWMiyTPaBDwL-QVJCZXTenvrg6_bSVMUbdOPQRnvS20WguqV5ON-BRQLfVCKlb', 
+						mapStyle : Cesium.BingMapsStyle.AERIAL
+					});
+					return provider;
+				}
+			};
+			
+			var treeNode = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
+			imageryLayerTreeStore.addNode(treeNode, imageryLayerTreeStore.getRoot());
+		}
+		
 		function createOpenStreetMapImageryLayer() {
 			var viewer = mapComponent.getViewer();
 			//Add layer

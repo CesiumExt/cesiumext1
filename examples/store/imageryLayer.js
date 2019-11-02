@@ -446,8 +446,6 @@ Ext.application({
 			viewer.camera.flyTo({
 				destination : Cesium.Cartesian3.fromDegrees(4.35, 50.84, 500000)
 			});
-			
-			
 		}
 		
 		function removeLastImageryLayer() {
