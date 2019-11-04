@@ -188,7 +188,7 @@ Ext.application({
 				tooltip: 'OpenStreetMap Imagery',
 				//imageryLayers: viewer.imageryLayers,
 				creationFunction: function() {
-					var provider = Cesium.createOpenStreetMapImageryProvider({
+					var provider = new Cesium.OpenStreetMapImageryProvider({
 						url : 'https://a.tile.openstreetmap.org/'
 					});
 					return provider;

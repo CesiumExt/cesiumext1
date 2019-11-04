@@ -92,7 +92,7 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 	
 	/**
      * A utility method which binds the events fired FROM the 
-     * Cesium ImageryLayerCollection associated TO this store
+     * Cesium DataSourceCollection associated TO this store
      *
      * @private
      */
@@ -147,9 +147,6 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
 			me._adding = true;
 			var result = me.proxy.reader.read(dataSource);
 			me.insert(idx, result.records);
-			//me.insert(idx, [dataSource]);
-			//var model = new CesiumExt.data.model.DataSourceModel(dataSource);
-			//me.insert(idx, model);
 			delete me._adding;
 		}
     },
@@ -339,11 +336,13 @@ Ext.define('CesiumExt.data.store.DataSourceStore', {
      * @private
      */
     onUpdate: function(store, record, operation) {
-		var me = store;
+		var me = this;
+		if(me !== store) return;
 		if(!me._updating) {
 			me._updating = true;
 			if (operation === Ext.data.Record.EDIT) {
-				if (record.modified && (record.modified.name || record.modified.show)) {
+				//if (record.modified && (record.modified.name || record.modified.show)) {
+				if (record.modified) {
 					var dataSource = record.getCesiumDataSource();
 					var name = record.get('name');
 					var show = record.get('show');

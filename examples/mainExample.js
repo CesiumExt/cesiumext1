@@ -24,6 +24,7 @@ Ext.require([
 	'CesiumExt.format.filter.NotEqualTo',
 	'CesiumExt.format.filter.BBox',
 	'CesiumExt.format.WFSGetFeature',
+	'CesiumExt.tree.plugin.TreeColumnIcon'
 ]);
 
 var toolbar;
@@ -210,7 +211,7 @@ Ext.application({
 			var viewer = mapComponent.getViewer();
 			var data = {
 				name: 'Bing Imagery Layer',
-				//data.iconUrl = '',
+				iconUrl: 'images/imageryProviders/bingAerial.png',
 				tooltip: 'Bing Aerial Imagery Layer',
 				//imageryLayers: viewer.imageryLayers,
 				creationFunction: function() {
@@ -229,9 +230,23 @@ Ext.application({
 		}
 		
 		function createImageryLayerTreePanel(treeStore) {
-			
-			 var treePanel = Ext.create('Ext.tree.Panel', {
+			//create the plugin to show the icon in the tree panel
+			var iconPlugin = Ext.create('CesiumExt.tree.plugin.TreeColumnIcon');
+			var treePanel = Ext.create('Ext.tree.Panel', {
 				//title: 'ImageryLayer Tree Example',
+				columns: {
+					header: false,
+					items: [
+						{
+							xtype: 'treecolumn',
+							dataIndex: 'text',
+							flex: 1,
+							plugins: [
+								iconPlugin
+							]
+						}
+					]
+				},
 				viewConfig: {
 					plugins: {ptype: 'treeviewdragdrop'}
 				},
@@ -264,7 +279,7 @@ Ext.application({
 			//add URBIS Imagery Layer from WMS related to Brussels/Belgium Region
 			data = {
 				name: 'URBIS layer for Brussels/Belgium Region',
-				//data.iconUrl = '',
+				iconUrl: 'https://urbisonline.brussels/assets/images/urbisonline-logo.png',
 				tooltip: 'URBIS layer for Brussels/Belgium Region through Cesium.WebMapServiceImageryProvider',
 				creationFunction: function() {
 					var provider = new Cesium.WebMapServiceImageryProvider({
@@ -285,7 +300,7 @@ Ext.application({
 			//add PICC Imagery Layer from WMS related to Brussels/Belgium Region
 			data = {
 				name: 'PICC layer for Wallon/Belgium Region',
-				//data.iconUrl = '',
+				iconUrl: 'http://geoportail.wallonie.be/modules/templates-geoportail/img/icons/rooster-red.png',
 				tooltip: 'PICC layer for Wallon/Belgium Region through Cesium.WebMapServiceImageryProvider',
 				creationFunction: function() {
 					var provider = new Cesium.WebMapServiceImageryProvider({
@@ -306,7 +321,7 @@ Ext.application({
 			//add GRB Imagery Layer from WMS related to Flemish Belgium Region
 			data = {
 				name: 'GRB layer for Flemish/Belgium Region',
-				//data.iconUrl = '',
+				iconUrl: 'https://ui.vlaanderen.be/3.latest/icons/app-icon/touch-icon-iphone-precomposed.png',
 				tooltip: 'GRB layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
 				creationFunction: function() {
 					var provider = new Cesium.WebMapServiceImageryProvider({
@@ -315,27 +330,6 @@ Ext.application({
 						parameters : {
 							transparent : true,
 							tiled: true,
-							format : 'image/png'
-						}
-					});
-					return provider;
-				}
-			};
-			
-			var treeNode = Ext.create('CesiumExt.data.model.ImageryLayerTreeModel', data);
-			imageryLayerTreeStore.addNode(treeNode,belgiumGroupNode);
-			
-			//add CRAB Address Imagery Layer from WMS related to Flemish Belgium Region
-			data = {
-				name: 'CRAB Address layer for Flemish/Belgium Region',
-				//data.iconUrl = '',
-				tooltip: 'CRAB Address layer for Flemish/Belgium Region through Cesium.WebMapServiceImageryProvider',
-				creationFunction: function() {
-					var provider = new Cesium.WebMapServiceImageryProvider({
-						url : 'https://geoservices.informatievlaanderen.be/raadpleegdiensten/Adressen/wms',        
-						layers: 'Adrespos',
-						parameters : {
-							transparent : true,
 							format : 'image/png'
 						}
 					});

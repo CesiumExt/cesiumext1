@@ -15,7 +15,7 @@
  */
  
 /**
- * Abstract base class for the model.
+ * Abstract base class for the Store.
  *
  * @class CesiumExt.data.store.BaseStore
  *
@@ -156,8 +156,8 @@ Ext.define('CesiumExt.data.store.BaseStore', {
     destroy: function() {
 		var me = this;
 		//unbind events
-		unbindCesiumCollectionEvents
-		unbindStoreEvents();
+		me.unbindCesiumCollectionEvents
+		me.unbindStoreEvents();
 		
 		delete this.cesiumCollection;
 	}

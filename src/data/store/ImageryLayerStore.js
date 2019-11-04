@@ -21,13 +21,13 @@
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
 Ext.define('CesiumExt.data.store.ImageryLayerStore', {
-    extend: 'Ext.data.Store',
+    extend: 'CesiumExt.data.store.BaseStore',
     requires: [
         'CesiumExt.data.model.ImageryLayerModel'
     ],
 
     mixins: [
-        //'GeoExt.mixin.SymbolCheck'
+
     ],
 
     // <debug>
@@ -47,6 +47,10 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
 		cesiumImageryLayerCollection: null
 	},
 	
+	getCesiumImageryLayerCollection: function() {
+		return this.cesiumCollection;
+	},
+	
 	/**
      * Constructs a new instance of ImageryLayers store.
      *
@@ -55,11 +59,15 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
     constructor: function(config) {
 		var me = this;
         config = config || {};
-		me.callParent([config]);
 		
+		var cesiumCollection = config.cesiumImageryLayerCollection;
+		delete config.cesiumImageryLayerCollection;
+		
+		me.callParent([config, cesiumCollection]);
 		me.initImageryLayerCollection(config);
-		me.addCesiumToStoreListeners();
-		me.addStoreToCesiumListeners();
+		
+		me.bindCesiumCollectionEvents();
+		me.bindStoreEvents();
     },
 	
 	/**
@@ -73,37 +81,38 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
 		var me = this;
 		config = config || {};
 		
-		//initialize the Cesium ImageryLayerCollection
-		if(config.cesiumImageryLayerCollection) {
-			me.cesiumImageryLayerCollection = config.cesiumImageryLayerCollection;
-		}
 		//load raw Cesium.ImageryLayer data in the store
-		if(me.cesiumImageryLayerCollection) {
-			for(var i = 0; i < me.cesiumImageryLayerCollection.length; ++i) {
-				 me.loadRawData(me.cesiumImageryLayerCollection.get(i), true);
+		if(me.getCesiumImageryLayerCollection()) {
+			for(var i = 0; i < me.getCesiumImageryLayerCollection().length; ++i) {
+				 me.loadRawData(me.getCesiumImageryLayerCollection().get(i), true);
 			}
 		}
 	},
 	
 	/**
-	* Add listeners to forward changes FROM Cesium TO ImageryLayer Store
-	*/
-	addCesiumToStoreListeners: function() {
+     * A utility method which binds the events fired FROM the 
+     * Cesium ImageryLayerCollection associated TO this store
+     *
+     * @private
+     */
+	bindCesiumCollectionEvents: function() {
 		var me = this;
 		
 		if(me.getCesiumImageryLayerCollection()) {
 			// add listeners to forward changes(add/remove Imagery Layer) from the cesium imageryLayerCollection to ImageryLayer Store
-			me.cesiumImageryLayerCollection.layerAdded.addEventListener(me.onCesiumImageryLayerAdded, me);
-			me.cesiumImageryLayerCollection.layerRemoved.addEventListener(me.onCesiumImageryLayerRemoved, me);
-			me.cesiumImageryLayerCollection.layerMoved.addEventListener(me.onCesiumImageryLayerMoved, me);
-			me.cesiumImageryLayerCollection.layerShownOrHidden.addEventListener(me.onCesiumImageryLayerShownOrHidden, me);
+			me.getCesiumImageryLayerCollection().layerAdded.addEventListener(me.onCesiumImageryLayerAdded, me);
+			me.getCesiumImageryLayerCollection().layerRemoved.addEventListener(me.onCesiumImageryLayerRemoved, me);
+			me.getCesiumImageryLayerCollection().layerMoved.addEventListener(me.onCesiumImageryLayerMoved, me);
+			me.getCesiumImageryLayerCollection().layerShownOrHidden.addEventListener(me.onCesiumImageryLayerShownOrHidden, me);
 		}
 	},
 	
 	/**
-	* Add listeners to forward changes FROM DataStore TO Cesium.
-	*/
-	addStoreToCesiumListeners: function() {
+     * An utility method which binds change events fired FROM this store
+     *
+     * @private
+     */
+	bindStoreEvents: function() {
 		var me = this;
 		
 		 me.on({
@@ -150,7 +159,7 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
     onCesiumImageryLayerRemoved: function(imageryLayer, index) {
         var me = this;
 		if (!me._removing) {
-			var record = me.getRecordByCesiumImageryLayer(imageryLayer);
+			var record = me.getRecordByCesiumObject(imageryLayer);
 			if(record) {
 				me._removing = true;
 				me.remove(record);
@@ -173,7 +182,7 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
     onCesiumImageryLayerMoved: function(imageryLayer, newIdx, oldIdx) {
 		if(newIdx === oldIdx) return;
         var me = this;
-		var imageryLayerCollection = me.cesiumImageryLayerCollection;
+		var imageryLayerCollection = me.getCesiumImageryLayerCollection();
 		if(!me._removing) {
 			me._removing = true;
 			var record = me.getAt(oldIdx);
@@ -270,17 +279,16 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
      * @private
      */
     onAdd: function(store, records, index) {
-        var me = store;
+        //var me = store;
+		var me = this;
+		if(me !== store) return;
         if (!me._adding) {
             me._adding = true;
             var imageryLayer;
             for (var i = 0, ii = records.length; i < ii; ++i) {
                 imageryLayer = records[i].getCesiumImageryLayer();
 				if(imageryLayer) {
-					//REMARK: imageryLayer added at the end. Code must be modified to re-order
-					//the inserted datSources in the imageryLayer Collection
-					//also to handle the promise.
-					me.cesiumImageryLayerCollection.add(imageryLayer, index);
+					me.getCesiumImageryLayerCollection().add(imageryLayer, index);
 				}
             }
             delete me._adding;
@@ -300,7 +308,7 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
 		var me = this;
 		var imageryLayer = oldRecord.getCesiumImageryLayer();
 		
-		me.getCesiumImageryLayerCollection.remove(imageryLayer, true);
+		me.getCesiumImageryLayerCollection().remove(imageryLayer, true);
     },
 	
 	/**
@@ -343,12 +351,13 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
      * @private
      */
-    onUpdate: function(record, operation, modifiedFieldNames, details, eOpts) {
+    onUpdate: function(store, record, operation, modifiedFieldNames, details, eOpts) {
 		var me = this;
+		if(me !== store) return;
 		if(!me._updating) {
 			me._updating = true;
 			if (operation === Ext.data.Record.EDIT) {
-				if (record.modified && (record.modified.name || record.modified.show)) {
+				if (record.modified) {
 					var imageryLayer = record.getCesiumImageryLayer();
 					var fields = record.getFields();
 					for(var i = 0; i < modifiedFieldNames.length; ++i) {
@@ -361,16 +370,14 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
 		}
     },
 	
-	 /**
-     * @inheritdoc
+	/**
+     * An implementation for the abstract method which unbinds events fired 
+	 * FROM this store
+     *
+     * @private
      */
-    destroy: function() {
+	unbindStoreEvents: function() {
 		var me = this;
-		
-		me.cesiumImageryLayerCollection.layerAdded.removeEventListener(me.onCesiumImageryLayerAdded);
-		me.cesiumImageryLayerCollection.layerRemoved.removeEventListener(me.onCesiumImageryLayerRemoved);
-		me.cesiumImageryLayerCollection.layerMoved.removeEventListener(me.onCesiumImageryLayerMoved, me);
-		me.cesiumImageryLayerCollection.layerShownOrHidden.removeEventListener(me.onCesiumImageryLayerShownOrHidden, me);
 		
 		me.un('load', me.onLoad, me);
         me.un('clear', me.onClear, me);
@@ -379,65 +386,28 @@ Ext.define('CesiumExt.data.store.ImageryLayerStore', {
         me.un('update', me.onUpdate, me);
 
         me.data.un('replace', me.onReplace, me);
-		
-        delete this.cesiumImageryLayerCollection;
-        this.callParent(arguments);
-    },
-	
+	},
 	
 	/**
-     * Overload loadRecords to set a flag if `addRecords` is `true` in the load
-     * options. ExtJS does not pass the load options to "load" callbacks, so
-     * this is how we provide that information to `onLoad`.
+     * An implementation for the abstract method which unbinds collection events fired 
+	 * FROM the Cesium ImageryLayerCollection associated to this store
      *
-     * @param {Ext.data.Model[]} records The array of records to load.
-     * @param {Object} options The loading options.
-     * @param {Boolean} [options.addRecords=false] Pass `true` to add these
-     *     records to the existing records, `false` to remove the Store's
-     *     existing records first.
      * @private
      */
-    loadRecords: function(records, options) {
-        if (options && options.addRecords) {
-            this._addRecords = true;
-        }
-        this.callParent(arguments);
-    },
+    unbindCesiumCollectionEvents: function() {
+		var me = this;
+		
+		me.getCesiumImageryLayerCollection().layerAdded.removeEventListener(me.onCesiumImageryLayerAdded);
+		me.getCesiumImageryLayerCollection().layerRemoved.removeEventListener(me.onCesiumImageryLayerRemoved);
+		me.getCesiumImageryLayerCollection().layerMoved.removeEventListener(me.onCesiumImageryLayerMoved, me);
+		me.getCesiumImageryLayerCollection().layerShownOrHidden.removeEventListener(me.onCesiumImageryLayerShownOrHidden, me);
+	},
 	
 	 /**
      * @inheritdoc
-     *
-     * The event firing behaviour of Ext.4.1 is reestablished here. See also:
-     * [This discussion on the Sencha forum](http://www.sencha.com/forum/
-     * showthread.php?253596-beforeload-is-not-fired-by-loadRawData).
      */
-	 
-    loadRawData: function(data, append) {
-        var me = this;
-        var result = me.proxy.reader.read(data);
-        var records = result.records;
-
-        if (result.success) {
-            me.totalCount = result.total;
-            me.loadRecords(records, append ? me.addRecordsOptions : undefined);
-            me.fireEvent('load', me, records, true);
-        }
-    },
+    destroy: function() {
+        this.callParent(arguments);
+    }
 	
-	
-	/**
-     * Get the record for the specified Cesium.ImageryLayer.
-     *
-     * @param {Cesium.ImageryLayer} imageryLayer. The Cesium ImageryLayer to get a model instance for.
-     * @return {Ext.data.Model} The corresponding model instance or undefined if
-     * 		not found.
-     */
-    getRecordByCesiumImageryLayer: function(imageryLayer) {
-        var index = this.findBy(function(r) {
-            return r.getCesiumImageryLayer() === imageryLayer;
-        });
-        if (index > -1) {
-            return this.getAt(index);
-        }
-    },
 });

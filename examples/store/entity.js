@@ -73,10 +73,6 @@ Ext.application({
 							handler: updateLastEntityName,
 						},
 						{
-							text : 'Remove Last Entity',
-							handler: removeLastEntity
-						},
-						{
 							text : 'Remove ALL Entities',
 							handler: removeAllEntities,
 						},
@@ -180,13 +176,6 @@ Ext.application({
 			});
 		}
 		
-		function removeLastEntity() {
-			var dataSources = mapComponent.getViewer().dataSources;
-			if(dataSources && dataSources.length > 0) {
-				var dataSource = dataSources.get(dataSources.length -1);
-				dataSources.remove(dataSource, true);
-			}
-		}
 		
 		function removeAllEntities() {
 			var entities =  mapComponent.getViewer().entities;
