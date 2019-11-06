@@ -45,6 +45,14 @@ Ext.define('CesiumExt.format.filter.ComparisonBinary', {
 		*/
 		matchCase: null,
 	},
+	
+	statics: {
+		TPL: 
+			'<{0}>' + 
+				'<PropertyName>{1}</PropertyName>' +
+				'<Literal>{2}</Literal>' +
+			'</{0}>'
+	},
 
 	/**
 	* The constructor method
@@ -62,5 +70,15 @@ Ext.define('CesiumExt.format.filter.ComparisonBinary', {
 		me.callParent([config]);
 		me.initConfig(config);
     },
+	
+	toString: function() {
+		var me = this;
+		return Ext.String.format(
+			CesiumExt.format.filter.ComparisonBinary.TPL,
+			this.getTagName(),
+			this.getPropertyName(),
+			this.getExpression()
+		);
+	}
 });
 

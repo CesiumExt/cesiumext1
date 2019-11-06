@@ -22,15 +22,41 @@
  */
 Ext.define('CesiumExt.format.filter.Not', {
     extend: 'CesiumExt.format.filter.AbstractFilter',
-	condition: null,
+	config: {
+		/**
+		* The Filter condition
+		* @cfg {CesiumExt.format.filter.AbstractFilter} condition
+		*/
+		condition: null
+	},
+	
+	statics: {
+		TPL: 
+			'<{0}>' + 
+				'{1}' +
+			'</{0}>'
+	},
 	
 	/**
 	 * The constructor method
 	 * @param {CesiumExt.format.filter.AbstractFilter} condition Filter condition.
 	 */
-	constructor: function(condition) {
-		this.callParent(['Not']);
-		this.condition = condition;
+	
+	constructor: function(config) {
+		var me = this;
+		config = config || {};
+		config.tagName = 'Not';
+		me.callParent([config]);
+		me.initConfig(config);
     },
+	
+	toString: function() {
+		var me = this;
+		return Ext.String.format(
+			CesiumExt.format.filter.Not.TPL,
+			me.getTagName(),
+			me.getCondition().toString()
+		);
+	}
 });
 

@@ -23,12 +23,31 @@
 Ext.define('CesiumExt.format.filter.IsNull', {
     extend:'CesiumExt.format.filter.Comparison',
 	
+	statics: {
+		TPL: 
+			'<{0}>' + 
+				'<PropertyName>{1}</PropertyName>' +
+			'</{0}>'
+	},
 	
 	/**
 	 * The constructor method
 	 * @param {String} propertyName Name of the context property to compare.
 	*/
-	constructor: function(propertyName) {
-		this.callParent(['PropertyIsNull', propertyName]);
+	constructor: function(config) {
+		var me = this;
+		config = config || {};
+		config.tagName = 'PropertyIsNull';
+		me.callParent([config]);
+		me.initConfig(config);
     },
+	
+	toString: function() {
+		var me = this;
+		return Ext.String.format(
+			CesiumExt.format.filter.IsNull.TPL,
+			me.getTagName(),
+			me.getPropertyName()
+		);
+	}
 });

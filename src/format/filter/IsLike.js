@@ -23,35 +23,49 @@
 Ext.define('CesiumExt.format.filter.IsLike', {
     extend:'CesiumExt.format.filter.Comparison',
 	
-	/**
-     * @property {String} pattern
-	 * @private
-	*/
-	pattern: null,
+	config: {
+		/**
+		* The Text Pattern
+		* @cfg {String} pattern
+		*/
+		pattern: undefined,
+		
+		/**
+		* The pattern character which matches any sequence of
+		*    zero or more string characters. Default is '*'.
+		* @cfg {String} wildCard
+		*/
+		wildCard: '*',
+		
+		/**
+		* The pattern character which matches any single
+		*    string character. Default is '.'.
+		* @cfg {String} singleChar
+		*/
+		singleChar: '.',
+		
+		/**
+		* Escape character which can be used to escape
+		*    the pattern characters. Default is '!'.
+		* @cfg {String} escapeChar
+		*/
+		escapeChar: '!',
+		
+		/**
+		* Case-sensitive?
+		* @cfg {Boolean | undefined} pattern
+		*/
+		matchCase: undefined,
+		
+	},
 	
-	/**
-     * @property {String} wildCard
-     * @private
-	*/
-	wildCard: null,
-	
-	/**
-     * @property {String} singleChar
-	 * @private
-	*/
-	singleChar: null,
-	
-	/**
-     * @property {String} escapeChar
-	 * @private
-	*/
-	escapeChar: null,
-	
-	/**
-	 * @property {Boolean | undefined} matchCase
-	 * @private
-	*/
-	matchCase: null,
+	statics: {
+		TPL: 
+			'<{0} {1}>' + 
+				'<PropertyName>{2}</PropertyName>' +
+				'<Literal>{3}</Literal>' +
+			'</{0}>'
+	},
 	
 	
 	/**
@@ -67,14 +81,37 @@ Ext.define('CesiumExt.format.filter.IsLike', {
 	 *    the pattern characters. Default is '!'.
 	 * @param {Boolean} opt_matchCase Case-sensitive?
 	*/
-	constructor: function(propertyName, pattern,
-	  opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase) {
-		this.callParent(['PropertyIsLike', propertyName]);
-		
-		 this.pattern = pattern;
-		 this.wildCard = (opt_wildCard !== undefined) ? opt_wildCard : '*';
-		 this.singleChar = (opt_singleChar !== undefined) ? opt_singleChar : '.';
-		 this.escapeChar = (opt_escapeChar !== undefined) ? opt_escapeChar : '!';
-		 this.matchCase = opt_matchCase;
+	constructor: function(config) {
+		var me = this;
+		config = config || {};
+		config.tagName = 'PropertyIsLike';
+		me.callParent([config]);
+		me.initConfig(config);
     },
+	
+	toString: function() {
+		var me = this;
+		//build attributes
+		var atts = [];
+		if(me.getWildCard())
+			atts.push('wildCard="' + me.getWildCard() + '"');
+		if(me.getSingleChar())
+			atts.push('singleChar="' + me.getSingleChar() + '"');
+		if(me.getEscapeChar())
+			atts.push('escapeChar="' + me.getEscapeChar() + '"');
+		if(me.getMatchCase() !== null && me.getMatchCase() !== undefined) {
+			if(me.getMatchCase())
+				atts.push('matchCase="true"');
+			else
+				atts.push('matchCase="false"');
+		}
+		
+		return Ext.String.format(
+			CesiumExt.format.filter.IsLike.TPL,
+			this.getTagName(),
+			atts.join(' '),
+			this.getPropertyName(),
+			this.getPattern()
+		);
+	}
 });

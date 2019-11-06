@@ -29,8 +29,12 @@ Ext.define('CesiumExt.format.filter.GreaterThan', {
 	 * @param {String} propertyName Name of the context property to compare.
 	 * @param {Number} expression The value to compare.
 	*/
-	constructor: function(propertyName, expression) {
-		this.callParent(['PropertyIsGreaterThan', propertyName, expression]);
+	constructor: function(config) {
+		var me = this;
+		config = config || {};
+		config.tagName = 'PropertyIsGreaterThan';
+		me.callParent([config]);
+		me.initConfig(config);
     },
 });
 

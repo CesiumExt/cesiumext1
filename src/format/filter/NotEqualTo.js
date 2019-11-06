@@ -38,23 +38,5 @@ Ext.define('CesiumExt.format.filter.NotEqualTo', {
 		config.tagName = 'PropertyIsNotEqualTo';
 		me.callParent([config]);
 		me.initConfig(config);
-    },
-	
-	statics: {
-		TPL: 
-			'<{0}>' + 
-				'<PropertyName>{1}</PropertyName>' +
-				'<Literal>{2}</Literal>' +
-			'</{0}>'
-	},
-	
-	toString: function(){
-		var me = this;
-		return Ext.String.format(
-			CesiumExt.format.filter.NotEqualTo.TPL,
-			this.getTagName(),
-			this.getPropertyName(),
-			this.getExpression()
-		);
-	}
+    }
 });

@@ -23,17 +23,31 @@
 Ext.define('CesiumExt.format.filter.IsBetween', {
     extend:'CesiumExt.format.filter.Comparison',
 	
-  /**
-   * @property {Number} lowerBoundary
-   * @private
-   */
-	lowerBoundary: null,
+	config: {
+		
+		/**
+		 * The lower  boundary of the range
+		 *
+		 * @cfg {Number} lowerBoundary
+		*/
+		lowerBoundary: null,
+		
+		/**
+		 * The upper  boundary of the range
+		 *
+		 * @cfg {Number} upperBoundary
+		*/
+		upperBoundary: null
+	},
 	
-  /**
-   * @property {Number} upperBoundary
-   * @private
-   */
-	upperBoundary: null,
+	statics: {
+		TPL: 
+			'<{0}>' + 
+				'<PropertyName>{1}</PropertyName>' +
+				'<LowerBoundary>{2}</LowerBoundary>' +
+				'<UpperBoundary>{3}</UpperBoundary>' +
+			'</{0}>'
+	},
 	
 	/**
 	* The constructor method
@@ -42,9 +56,22 @@ Ext.define('CesiumExt.format.filter.IsBetween', {
 	* @param {Number} lowerBoundary The lower bound of the range.
 	* @param {Number} upperBoundary The upper bound of the range.
 	*/
-	constructor: function(propertyName, lowerBoundary, upperBoundary) {
-		this.callParent(['PropertyIsBetween', propertyName]);
-		this.lowerBoundary = lowerBoundary;
-		this.upperBoundary = upperBoundary;
+	constructor: function(config) {
+		var me = this;
+		config = config || {};
+		config.tagName = 'PropertyIsBetween';
+		me.callParent([config]);
+		me.initConfig(config);
     },
+	
+	toString: function() {
+		var me = this;
+		return Ext.String.format(
+			CesiumExt.format.filter.IsBetween.TPL,
+			me.getTagName(),
+			me.getPropertyName(),
+			me.getLowerBoundary(),
+			me.getUpperBoundary()
+		);
+	}
 });

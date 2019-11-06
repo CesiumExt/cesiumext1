@@ -27,9 +27,13 @@ Ext.define('CesiumExt.format.filter.LessThan', {
 	 * The constructor method.
 	 *
 	 * @param {String} propertyName Name of the context property to compare.
-	 * @param {!number} expression The value to compare.
+	 * @param {Number} expression The value to compare.
 	 */
-	constructor: function(propertyName, expression) {
-		this.callParent(['PropertyIsLessThan', propertyName, expression]);
-    },
+	constructor: function(config) {
+		var me = this;
+		config = config || {};
+		config.tagName = 'PropertyIsLessThan';
+		me.callParent([config]);
+		me.initConfig(config);
+    }
 });
