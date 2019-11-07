@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>CesiumExt.data.store.ImageryLayerTreeStore Example</title>
+    <title>CesiumExt.data.store.ImageryLayerTreeStore Example with Grid</title>
 	<link rel="stylesheet" href="https://cesiumjs.org/releases/1.63/Build/Cesium/Widgets/widgets.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
 	<!-- Style our Cesium app. -->
@@ -13,19 +13,18 @@
     <div id='description'>
         <p>
             This example shows how to use the <code><b>CesiumExt.data.store.ImageryLayerTreeStore</b></code>
-            with the plugin <code><b>CesiumExt.tree.plugin.TreeColumnIcon</b></code> to show the icons for the layers:
+            with an editable Tree Grid Panel:
         </p>
 		<ul>
-            <li>This Tree Panel allows to enable/disable the Imagery Layer Visibility</li>
+            <li>Each Change in the Tree Grid Panel will be reflected in <code><b>Cesium.ImageryLayer</b></code></li>
+			<li>Drag&Drop is available to move the ImageryLayer position</li>
         </ul>
-		<ul>
-            <li>Drag&Drop is enabled to allow to change the order of the Imagery Layers</li>
-        </ul>
-		<ul>
-            <li>It is possible to group the Imagery Layers in different groups</li>
-        </ul>
+		<p>
+			<u>Remark</u>: Double click in the Tree Grid Row to edit the Cesium ImageryLayer properties.
+		</p>
         <p>
-            Have a look at <a href="imageryLayerTreeWithIcon.js">imageryLayerTreeWithIcon.js</a> to see how this is done.
+            Have a look at <a href="imageryLayerTreeGrid.js">imageryLayerTreeGrid.js</a> to see how this is
+            done.
         </p>
     </div>
 	
@@ -42,6 +41,6 @@
             }
         });
     </script>
-    <script src="imageryLayerTreeWithIcon.js"></script>
+    <script src="imageryLayerTreeGrid.js"></script>
 </body>
 </html>

@@ -102,7 +102,7 @@
 		},
 		{
             name: 'alpha',
-			defaultValue: 1.0,
+			//defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -111,7 +111,7 @@
         },
 		{
             name: 'brightness',
-			defaultValue: 1.0,
+			//defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -120,7 +120,7 @@
         },
 		{
             name: 'contrast',
-			defaultValue: 1.0,
+			//defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -129,7 +129,7 @@
         },
 		{
             name: 'hue',
-			defaultValue: 0.0,
+			//defaultValue: 0.0,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -138,7 +138,7 @@
         },
 		{
             name: 'saturation',
-			defaultValue: 1.0,
+			//defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -147,7 +147,7 @@
         },
 		{
             name: 'gamma',
-			defaultValue: 1.0,
+			//defaultValue: 1.0,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -156,7 +156,7 @@
         },
 		{
             name: 'splitDirection',
-			defaultValue: Cesium.ImagerySplitDirection.NONE,
+			//defaultValue: Cesium.ImagerySplitDirection.NONE,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -165,7 +165,7 @@
         },
 		{
             name: 'minificationFilter',
-			defaultValue: Cesium.TextureMinificationFilter.LINEAR,
+			//defaultValue: Cesium.TextureMinificationFilter.LINEAR,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -174,7 +174,7 @@
         },
 		{
             name: 'magnificationFilter',
-			defaultValue: Cesium.TextureMagnificationFilter.LINEAR,
+			//defaultValue: Cesium.TextureMagnificationFilter.LINEAR,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -201,7 +201,7 @@
         },
 		{
             name: 'colorToAlpha',
-			defaultValue: true,
+			//defaultValue: true,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
@@ -211,7 +211,7 @@
 		{
             name: 'colorToAlphaThreshold',
             type: 'number',
-			defaultValue: 	0.004,
+			//defaultValue: 	0.004,
 			persist: false,
             convert: function(v, record) {
 				if(record.getCesiumImageryLayer())
