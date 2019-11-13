@@ -24,11 +24,10 @@
  */
 Ext.define('CesiumExt.interaction.GetPositionInteraction', {
     extend: 'CesiumExt.interaction.Interaction',
-	//mixins: ['Ext.mixin.Observable'],
 	
 	config: {
 		viewer: null,
-		message: 'Pick Point to retrieve Coordinate',
+		message: 'Pick Point to retrieve Coordinate or <esc> to cancel',
 		showCartographicCoordinate: false,
 		label : {
             show : false,
@@ -45,9 +44,6 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 	},
 	
 	_entityLabel : null,
-	
-	_screenSpaceEventHandler: null,
-	
 	
 	/**
 	* @param {Object} The configuration object for this Interaction.
@@ -76,10 +72,9 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 			label : me.label
 		});
 		//register screen space event handlers
-		me._screenSpaceEventHandler = new Cesium.ScreenSpaceEventHandler(me.viewer.scene.canvas);
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.mouseMoveHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.mouseMoveHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.getCoordinateHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.getCoordinateHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_CLICK);
 		//me.on('beforedestroy', me.onBeforeDestroy, me);
     },
@@ -99,11 +94,11 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 
             me._entityLabel.position = cartesian;
             me._entityLabel.label.show = true;
-            me._entityLabel.label.text = me.message;
-			/*
-                'Lon: ' + ('   ' + longitudeString).slice(-7) + '\u00B0' +
-                '\nLat: ' + ('   ' + latitudeString).slice(-7) + '\u00B0';
-			*/
+			
+			var longitude = longitudeString.slice(-7) + '\u00B0';
+			var latitude = latitudeString.slice(-7) + '\u00B0'
+			var msg = '{0}\nLon: {1}\nLat: {2}';
+			me._entityLabel.label.text = Ext.String.format(msg, me.message, longitude, latitude);
         } else {
             me._entityLabel.label.show = false;
         }
@@ -137,12 +132,11 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 	cleanup: function() {
 		//remove label
 		var me = this;
+		me.callParent(arguments);
 		if (me._entityLabel) {
 			me.viewer.entities.remove(me._entityLabel);
 			me._entityLabel = null;
 		}
-		//destroy screen space event handlers
-		 me._screenSpaceEventHandler = me._screenSpaceEventHandler && me._screenSpaceEventHandler.destroy();
 	},
 	
 	 /**

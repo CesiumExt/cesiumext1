@@ -33,6 +33,15 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		viewer: null
 	},
 	
+	_screenSpaceEventHandler: undefined,
+	
+	getScreenSpaceEventHandler: function() {
+		var me = this;
+		if(!me._screenSpaceEventHandler)
+			me._screenSpaceEventHandler = new Cesium.ScreenSpaceEventHandler(me.getViewer().scene.canvas);
+		return me._screenSpaceEventHandler;
+	},
+	
 	
 	/**
 	* @param {Object} The configuration object for this Interaction.
@@ -44,6 +53,43 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		me.callParent([config]);
 		me.initConfig(config);
 		this.mixins.observable.constructor.call(this, config);
+		
+		//Register event handle handler to listen <esc> key to cancel command
+		document.addEventListener('keydown', function(evt) {me.handleEscKey(evt, me);});
     },
+	
+	/**
+	* Event handler called once the user press the <esc> key.
+	* As result, the system will cancel the operation
+	*
+	* @private
+	*/
+	handleEscKey: function(evt, context) {
+		var me = (context ? context : this);
+	    evt = evt || window.event;
+	    if (evt.keyCode == 27) {
+			me.fireEvent('cancelled');
+	        me.cleanup();
+	    }
+	},
+	
+	
+	/**
+	* Cleanup the resources
+	*/
+	cleanup: function() {
+		var me = this;
+		me._screenSpaceEventHandler = me._screenSpaceEventHandler && me._screenSpaceEventHandler.destroy();
+		//remove <esc> key event handler
+		 document.removeEventListener('keydown', me.handleEscKey);
+	},
+	
+	 /**
+     * @inheritdoc
+     */
+    destroy: function() { 
+		this.cleanup();
+		this.callParent(arguments);
+	}
 	
 });

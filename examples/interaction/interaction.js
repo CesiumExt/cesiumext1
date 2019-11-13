@@ -17,7 +17,8 @@ Ext.require([
 	'Ext.window.Window',
 	'CesiumExt.map.Map',
 	'CesiumExt.interaction.GetPositionInteraction',
-	'CesiumExt.interaction.GetRectangleInteraction'
+	'CesiumExt.interaction.GetRectangleInteraction',
+	'CesiumExt.interaction.GetPolylineGraphicsInteraction'
 ]);
 
 var toolbar;
@@ -51,6 +52,10 @@ Ext.application({
 						{
 							text : 'Draw Rectangle',
 							handler: drawRectangle
+						},
+						{
+							text : 'Draw Polyline',
+							handler: drawPolyline
 						}
 					]
 				}
@@ -83,6 +88,23 @@ Ext.application({
         });
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
+		
+		function drawPolyline() {
+			var viewer = mapComponent.getViewer();
+			//create GetRectangle Interaction
+			var getPolylineGraphicsInteraction = Ext.create('CesiumExt.interaction.GetPolylineGraphicsInteraction',
+			{
+				viewer: viewer
+			});
+			getPolylineGraphicsInteraction.on('drawend', drawPolylineHandler);
+			
+			function drawPolylineHandler(polylineGraphics) {
+				polylineGraphics.material = Cesium.Color.BLUE;
+				viewer.entities.add({
+					polyline: polylineGraphics
+				});
+			}
+		}
 		
 		function drawRectangle() {
 			var viewer = mapComponent.getViewer();

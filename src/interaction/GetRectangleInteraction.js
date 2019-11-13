@@ -54,7 +54,7 @@
 	// latitude coordinates.
 	_rectangleSelector: new Cesium.Rectangle(),
 	
-	_screenSpaceEventHandler: null,
+	//_screenSpaceEventHandler: null,
 	
 	_mouseDown: false,
 	
@@ -101,27 +101,24 @@
 		me.getBoxRectangleCallbackProperty = new Cesium.CallbackProperty(me.getBoxRectangleCallbackFunction(me), false);
 		
 		//register event handler for mouse interaction
-		me._screenSpaceEventHandler = new Cesium.ScreenSpaceEventHandler(me.getViewer().scene.canvas);
 		
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.requestFirstCornerHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.requestFirstCornerHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 			
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.startClickShiftHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.startClickShiftHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_DOWN,
 			Cesium.KeyboardEventModifier.SHIFT);
 			
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.drawSelector(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.drawSelector(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE,
 			Cesium.KeyboardEventModifier.SHIFT);
 			
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.endClickShiftHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endClickShiftHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_UP);
 			
-		me._screenSpaceEventHandler.setInputAction(function(movement) {me.endClickShiftHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endClickShiftHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_UP,
 			Cesium.KeyboardEventModifier.SHIFT);
-		//Register event handle handler to listen <esc> key to cancel command
-		document.addEventListener('keydown', function(evt) {me.handleEscKey(evt, me);});
 	},
 	
 	/**
@@ -216,19 +213,6 @@
 		me.fireEvent('drawend', data);
 	},
 	
-	/**
-	* Event handler called once the user press the <esc> key.
-	* As result, the system will cancel the operation
-	*
-	* @private
-	*/
-	handleEscKey: function(evt, context) {
-		var me = (context ? context : this);
-	    evt = evt || window.event;
-	    if (evt.keyCode == 27) {
-	        me.cleanup();
-	    }
-	},
 	
 	/**
 	* Cleanup the resources
@@ -236,6 +220,7 @@
 	*/
 	cleanup: function() {
 		var me = this;
+		me.callParent(arguments);
 		me.getViewer().scene.screenSpaceCameraController.enableInputs  = true;
 		me._mouseDown = false;
 		me._rectangleSelector = new Cesium.Rectangle();
@@ -254,10 +239,6 @@
 			me.getViewer().entities.remove(me._entityRectangle);
 			me._entityRectangle = null;
 		}
-		//destroy screen space event handlers
-		 me._screenSpaceEventHandler = me._screenSpaceEventHandler && me._screenSpaceEventHandler.destroy();
-		 //remove <esc> key event handler
-		 document.removeEventListener('keydown', me.handleEscKey);
 	},
 	
 	 /**
@@ -267,5 +248,4 @@
 		this.cleanup();
 		this.callParent(arguments);
 	}
-	
  });
