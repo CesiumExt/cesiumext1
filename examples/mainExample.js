@@ -24,7 +24,10 @@ Ext.require([
 	'CesiumExt.format.filter.NotEqualTo',
 	'CesiumExt.format.filter.BBox',
 	'CesiumExt.format.WFSGetFeature',
-	'CesiumExt.tree.plugin.TreeColumnIcon'
+	'CesiumExt.tree.plugin.TreeColumnIcon',
+	'CesiumExt.interaction.GetPolylineGraphics',
+	'CesiumExt.interaction.GetPolylineVolumeGraphics',
+	'CesiumExt.data.store.EntityStore'
 ]);
 
 var toolbar;
@@ -141,6 +144,19 @@ Ext.application({
 						}
 					]
 				},
+				
+				{
+					text : 'Draw',
+					menu : 
+					[ 
+						{
+							text : 'Draw Pipe',
+							handler: drawPipe
+						}
+					]
+				},
+				
+				
 						
 			]
 		});
@@ -205,6 +221,29 @@ Ext.application({
         });
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
+		function drawPipe() {
+			var viewer = mapComponent.getViewer();
+			var polylineVolume = {
+				material : Cesium.Color.RED,
+				width: 3.0,
+				shape: CesiumExt.interaction.GetPolylineVolumeGraphics.computeCircle(1.0),
+			};
+			//create Interaction
+			var getPolylineVolumeGraphics = Ext.create('CesiumExt.interaction.GetPolylineVolumeGraphics',
+			{
+				viewer: viewer,
+				polylineVolume: polylineVolume
+			});
+			getPolylineVolumeGraphics.on('drawend', drawPolylineVolumeHandler);
+			
+			function drawPolylineVolumeHandler(polylineVolumeGraphics) {
+				polylineVolumeGraphics.material = Cesium.Color.ORANGE;
+				viewer.entities.add({
+					polylineVolume: polylineVolumeGraphics
+				});
+			}
+		}
+		
 
 		
 		function createBingImageryLayer() {

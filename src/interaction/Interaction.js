@@ -24,7 +24,6 @@
  */
 Ext.define('CesiumExt.interaction.Interaction', {
     extend: 'Ext.Base',
-	//mixins: ['Ext.mixin.Observable'],
 	mixins: {
         observable : 'Ext.util.Observable'
     },
@@ -33,7 +32,12 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		viewer: null
 	},
 	
+	
 	_screenSpaceEventHandler: undefined,
+	
+	_isActive: true,
+	
+	_rayScratch: new Cesium.Ray(),
 	
 	getScreenSpaceEventHandler: function() {
 		var me = this;
@@ -42,6 +46,21 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		return me._screenSpaceEventHandler;
 	},
 	
+	/**
+	* Return whether the interaction is currently active.
+	* @return {Boolean} `true` if the interaction is active, `false` otherwise.
+	*/
+	getActive: function() {
+		return this._isActive;
+	},
+	
+	/**
+    * Activate or deactivate the interaction.
+    * @param {Boolean} active Active.
+    */
+	setActive: function(active) {
+		this._isActive = active;
+	},
 	
 	/**
 	* @param {Object} The configuration object for this Interaction.
@@ -56,7 +75,26 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		
 		//Register event handle handler to listen <esc> key to cancel command
 		document.addEventListener('keydown', function(evt) {me.handleEscKey(evt, me);});
+		//not show selectionIndicator and infoBox during interaction
+		me.getViewer().selectionIndicator.viewModel.selectionIndicatorElement.style.visibility = 'hidden';
+        document.getElementsByClassName('cesium-infoBox')[0].style.visibility = "hidden";
     },
+	
+	getPositionFromMouse: function(mousePosition, cartesianResult) {
+		var me = this;
+		var scene = me.getViewer().scene;
+		var pickedObject = scene.pick(mousePosition);
+		var position;
+		if (Cesium.defined(pickedObject) && (pickedObject instanceof Cesium.Cesium3DTileFeature || pickedObject.primitive instanceof Cesium.Cesium3DTileset)) {
+			scene.render();
+			position = scene.pickPosition(mousePosition, cartesianResult);
+			return position;
+		} else {
+			me._rayScratch = scene.camera.getPickRay(mousePosition, me._rayScratch);
+			position = scene.globe.pick(me._rayScratch, scene, cartesianResult);
+			return position;
+		}
+	},
 	
 	/**
 	* Event handler called once the user press the <esc> key.
@@ -80,6 +118,9 @@ Ext.define('CesiumExt.interaction.Interaction', {
 	cleanup: function() {
 		var me = this;
 		me._screenSpaceEventHandler = me._screenSpaceEventHandler && me._screenSpaceEventHandler.destroy();
+		//reset visibility for selectionIndicator and infoBox after interaction
+		me.getViewer().selectionIndicator.viewModel.selectionIndicatorElement.style.visibility = 'visible';
+        document.getElementsByClassName('cesium-infoBox')[0].style.visibility = "visible";
 		//remove <esc> key event handler
 		 document.removeEventListener('keydown', me.handleEscKey);
 	},

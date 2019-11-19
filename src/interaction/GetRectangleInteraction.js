@@ -131,8 +131,8 @@
 		var me = (context ? context : this);
 		me.getViewer().scene.screenSpaceCameraController.enableInputs  = false;
 		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-        me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition, 
-			ellipsoid, me._curCartesianPosition);
+        //me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition, ellipsoid, me._curCartesianPosition);
+		me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
         if (me._curCartesianPosition) {
             me._entityLabel.position = me._curCartesianPosition;
             me._entityLabel.label.show = true;
@@ -168,8 +168,8 @@
 			return;
 		}
 		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-		me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition,
-				ellipsoid, me._curCartesianPosition);
+		//me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition, ellipsoid, me._curCartesianPosition);
+		me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
 
 		if (me._curCartesianPosition) {
 			//show message requesting second corner in the current mouse position

@@ -15,15 +15,15 @@
  */
  
  /**
- * Class used to retrieve the PolylineGraphics from the user through
- * mouse input.
- * @class CesiumExt.interaction.GetPolylineGraphicsInteraction
+ * Abstract Class used to implement the 'get' operation for linear entity
+ * through user interaction
+ * @class CesiumExt.interaction.GetPolylineGraphics
  *
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
  
- Ext.define('CesiumExt.interaction.GetPolylineGraphicsInteraction', {
-    extend: 'CesiumExt.interaction.Interaction',
+ Ext.define('CesiumExt.interaction.GetPolylineGraphics', {
+    extend: 'CesiumExt.interaction.GetInteraction',
 	
 	config: {
 		firstVertexMessage: 'Select the first vertex or <esc> to cancel',
@@ -37,7 +37,6 @@
             horizontalOrigin : Cesium.HorizontalOrigin.LEFT,
             verticalOrigin : Cesium.VerticalOrigin.TOP,
             pixelOffset : new Cesium.Cartesian2(15, 0),
-			//heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
 			disableDepthTestDistance: Number.POSITIVE_INFINITY
         },
 		polyline : {
@@ -49,7 +48,7 @@
 	
 	_entityLabel: null,
 	
-	_entityPolyline: null,
+	//_entityPolyline: null,
 	
 	_curCartesianPosition: new Cesium.Cartesian3(),
 	
@@ -57,9 +56,9 @@
 	
 	_numberOfInputVertices: 0,
 	
-	getPositionsCallbackProperty: null,
+	_getPositionsCallbackProperty: null,
 	
-	getPositionsCallbackFunction: function(me) {
+	_getPositionsCallbackFunction: function(me) {
 		var callbackFunction =  function(time, result) {
 			//result = me._positions.slice(0); //clone array
 			result = me._positions;
@@ -67,6 +66,8 @@
 		};
 		return callbackFunction;
 	},
+	
+	
 	
 	constructor: function(config) {
 		var me = this;
@@ -79,20 +80,18 @@
 		//disable zoom/pan, etc.
 		//me.getViewer().scene.screenSpaceCameraController.enableInputs  = false;
 		
+		
 		//create entity label to show the message
 		me.getLabel().show = false;
 		me._entityLabel = me.viewer.entities.add({
 			label : me.getLabel()
 		});
 		
-		//create entity polyline
-		me.getPolyline().show = false;
-		me._entityPolyline = me.getViewer().entities.add({
-			polyline : new Cesium.PolylineGraphics(me.getPolyline())
-		});
+		//create linear entity
+		me.createDragEntity();
 		
 		//set the callback property to force the visualization of the polyline during user interaction
-		me.getPositionsCallbackProperty = new Cesium.CallbackProperty(me.getPositionsCallbackFunction(me), false);
+		me._getPositionsCallbackProperty = new Cesium.CallbackProperty(me._getPositionsCallbackFunction(me), false);
 		
 		
 		//register the mouse events
@@ -105,6 +104,29 @@
 			
 		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endInputHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+	},
+	
+	/**
+	 * @inheritdoc
+	*/
+	createDragEntity: function() {
+		var me = this;
+		//create entity polyline
+		me.getPolyline().show = false;
+		var entity = me.getDataSource().entities.add({
+			polyline : new Cesium.PolylineGraphics(me.getPolyline())
+		});
+		me.setDragEntity(entity);
+		return entity;
+	},
+	
+	/**
+	* Method to return the Graphics for the linear entity
+	* @return {Cesium.PolylineGraphics}
+	*/
+	getLinearEntityGraphics: function() {
+		var me = this;
+		return me.getDragEntity().polyline;
 	},
 	
 	
@@ -124,8 +146,7 @@
 		
 		function requestVertex(movement, me, message) {
 			var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-			me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition, 
-				ellipsoid, me._curCartesianPosition);
+			me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
 			if (me._curCartesianPosition) {
 				//update label and its position based on mouse position
 				me._entityLabel.position = me._curCartesianPosition;
@@ -144,14 +165,14 @@
 	getVertexHandler: function(movement, context) {
 		var me = (context ? context : this);
 		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-		var cartesian = me.getViewer().camera.pickEllipsoid(movement.position, 
-				ellipsoid);
+		//var cartesian = me.getViewer().camera.pickEllipsoid(movement.position, ellipsoid);
+		var cartesian = me.getPositionFromMouse(movement.position);
 		if (cartesian) {
-			me._entityPolyline.polyline.positions =  me.getPositionsCallbackProperty;
+			me.getDragEntity().polyline.positions =  me._getPositionsCallbackProperty;
 			me._positions.pop();
 			me._positions.push(cartesian);
 			me._numberOfInputVertices += 1;
-			me._entityPolyline.polyline.show = true;
+			me.getDragEntity().polyline.show = true;
 		}
 	},
 	
@@ -160,8 +181,8 @@
 		if(me._numberOfInputVertices < 2) return;
 		me._positions.pop();
 		me._numberOfInputVertices -= 1;
-		me._entityPolyline.polyline.positions =  me._positions;
-		var data = me._entityPolyline.polyline.clone();
+		me.getDragEntity().polyline.positions =  me._positions;
+		var data = me.getDragEntity().polyline.clone();
 		//cleanup
 		me.cleanup();
 		//fire event
@@ -174,23 +195,19 @@
 	*/
 	cleanup: function() {
 		var me = this;
-		me.callParent(arguments);
-		//me.getViewer().scene.screenSpaceCameraController.enableInputs  = true;
+		me.getViewer().scene.screenSpaceCameraController.enableInputs  = true;
 		me._curCartesianPosition = new Cesium.Cartesian3();
 		me._positions = [];
 		me._numberOfInputVertices = 0;
-		me.getPositionsCallbackProperty = null;
+		me._getPositionsCallbackProperty = null;
 		
 		//remove label
 		if (me._entityLabel) {
 			me.getViewer().entities.remove(me._entityLabel);
 			me._entityLabel = null;
 		}
-		//remove rectangle
-		if (me._entityPolyline) {
-			me.getViewer().entities.remove(me._entityPolyline);
-			me._entityPolyline = null;
-		}
+		
+		me.callParent(arguments);
 	},
 	
 	 /**
