@@ -62,6 +62,22 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		this._isActive = active;
 	},
 	
+	statics: {
+		TOOLTIP_TPL: 
+			'<p style="color:white;' + 
+				'background:rgba(0, 0, 0, 0.5);' + 
+				'border-radius: 4px;' + 
+				'padding: 4px 8px;' +
+				'opacity: 0.7;' +
+				'white-space:nowrap;' +
+				'position:absolute;' +
+				'left:{0}px;' +
+				'top:{1}px"' + 
+			'>' + 
+				'{2}<br/>' +
+			'</p>'
+	},
+	
 	/**
 	* @param {Object} The configuration object for this Interaction.
 	* @inheritdoc
@@ -80,17 +96,17 @@ Ext.define('CesiumExt.interaction.Interaction', {
         document.getElementsByClassName('cesium-infoBox')[0].style.visibility = "hidden";
     },
 	
-	getPositionFromMouse: function(mousePosition, cartesianResult) {
+	getPositionFromMouse: function(windowPosition, cartesianResult) {
 		var me = this;
 		var scene = me.getViewer().scene;
-		var pickedObject = scene.pick(mousePosition);
+		var pickedObject = scene.pick(windowPosition);
 		var position;
 		if (Cesium.defined(pickedObject) && (pickedObject instanceof Cesium.Cesium3DTileFeature || pickedObject.primitive instanceof Cesium.Cesium3DTileset)) {
 			scene.render();
-			position = scene.pickPosition(mousePosition, cartesianResult);
+			position = scene.pickPosition(windowPosition, cartesianResult);
 			return position;
 		} else {
-			me._rayScratch = scene.camera.getPickRay(mousePosition, me._rayScratch);
+			me._rayScratch = scene.camera.getPickRay(windowPosition, me._rayScratch);
 			position = scene.globe.pick(me._rayScratch, scene, cartesianResult);
 			return position;
 		}
@@ -111,6 +127,25 @@ Ext.define('CesiumExt.interaction.Interaction', {
 	    }
 	},
 	
+	/**
+	* Show the tooltip message on screen
+	*
+	* @param {Cesium.Cartesian2} windowPosition The window position where the tooltip will be shown
+	* @param {String} message The message tooltip
+	*/
+	showTooltip: function(windowPosition, message) {
+		//var innerhtml = `<p style="color:white;background:rgba(0, 0, 0, 0.5);border-radius: 4px;padding: 4px 8px;opacity: 0.7;white-space:nowrap;position:absolute;top:${windowPosition.y}px;left:${windowPosition.x}px"/>${message}<br/><p/>`
+		var innerhtml =  Ext.String.format(CesiumExt.interaction.Interaction.TOOLTIP_TPL, windowPosition.x, windowPosition.y, message);
+		document.getElementById('cesiumTooltip').innerHTML = innerhtml;
+	},
+	
+	/**
+	* Method to hide the tooltip
+	*/
+	hideTooltip: function() {
+		document.getElementById('cesiumTooltip').innerHTML = '';
+	},
+
 	
 	/**
 	* Cleanup the resources
@@ -122,7 +157,8 @@ Ext.define('CesiumExt.interaction.Interaction', {
 		me.getViewer().selectionIndicator.viewModel.selectionIndicatorElement.style.visibility = 'visible';
         document.getElementsByClassName('cesium-infoBox')[0].style.visibility = "visible";
 		//remove <esc> key event handler
-		 document.removeEventListener('keydown', me.handleEscKey);
+		document.removeEventListener('keydown', me.handleEscKey);
+		me.hideTooltip();
 	},
 	
 	 /**

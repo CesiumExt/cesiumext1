@@ -19,7 +19,8 @@ Ext.require([
 	'CesiumExt.interaction.GetPositionInteraction',
 	'CesiumExt.interaction.GetRectangleInteraction',
 	'CesiumExt.interaction.GetPolylineGraphics',
-	'CesiumExt.interaction.GetPolylineVolumeGraphics'
+	'CesiumExt.interaction.GetPolylineVolumeGraphics',
+	'CesiumExt.interaction.GetPolygonGraphics'
 ]);
 
 var toolbar;
@@ -61,6 +62,10 @@ Ext.application({
 						{
 							text : 'Draw Polyline Volume',
 							handler: drawPolylineVolume
+						},
+						{
+							text : 'Draw Polygon',
+							handler: drawPolygon
 						}
 					]
 				}
@@ -108,6 +113,23 @@ Ext.application({
 				polylineGraphics.material = Cesium.Color.BLUE;
 				viewer.entities.add({
 					polyline: polylineGraphics
+				});
+			}
+		}
+		
+		function drawPolygon() {
+			var viewer = mapComponent.getViewer();
+			//create GetPolygonGraphics Interaction
+			var getPolygonGraphicsInteraction = Ext.create('CesiumExt.interaction.GetPolygonGraphics',
+			{
+				viewer: viewer
+			});
+			getPolygonGraphicsInteraction.on('drawend', drawPolygonHandler);
+			
+			function drawPolygonHandler(polygonGraphics) {
+				polygonGraphics.material = Cesium.Color.BLUE.withAlpha(0.3);
+				var entity = viewer.entities.add({
+					polygon: polygonGraphics
 				});
 			}
 		}

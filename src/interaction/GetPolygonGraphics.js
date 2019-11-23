@@ -15,24 +15,29 @@
  */
  
  /**
- * Class used to get the Cesium PolylineGraphics
+ * Class used to get the Cesium PolygonGraphics
  * through user interaction
- * @class CesiumExt.interaction.GetPolylineGraphics
+ * @class CesiumExt.interaction.GetPolygonGraphics
  *
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
  
- Ext.define('CesiumExt.interaction.GetPolylineGraphics', {
+ Ext.define('CesiumExt.interaction.GetPolygonGraphics', {
     extend: 'CesiumExt.interaction.GetInteraction',
 	
 	config: {
 		firstVertexMessage: 'Select the first vertex or &lt;esc&gt; to cancel',
 		secondVertexMessage: 'Select the second vertex or &lt;esc&gt; to cancel',
+		thirdVertexMessage: 'Select the third vertex or &lt;esc&gt; to cancel',
 		nextVertexMessage: 'Select next vertex or right click to finish or &lt;esc&gt; to cancel',
 		polyline : {
 			material : Cesium.Color.RED,
+			width: 2.0,
 			clampToGround: true,
-			width: 2.0
+		},
+		polygon: {
+			material: Cesium.Color.RED.withAlpha(0.3),
+			heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
 		}
 	},
 	
@@ -44,15 +49,22 @@
 	
 	_getPositionsCallbackProperty: null,
 	
-	_getPositionsCallbackFunction: function(me) {
+	_getPolygonPositionsCallbackProperty: null,
+	
+	_getPolylinePositionsCallbackFunction: function(me) {
 		var callbackFunction =  function(time, result) {
-			//result = me._positions.slice(0); //clone array
 			result = me._positions;
 			return result;
 		};
 		return callbackFunction;
 	},
 	
+	_getPolygonPositionsCallbackFunction: function(me) {
+		var callbackFunction =  function(time, result) {
+			return new Cesium.PolygonHierarchy(me._positions)
+		};
+		return callbackFunction;
+	},
 	
 	constructor: function(config) {
 		var me = this;
@@ -65,15 +77,12 @@
 		//disable zoom/pan, etc.
 		//me.getViewer().scene.screenSpaceCameraController.enableInputs  = false;
 		
-		//create linear entity
+		//create scratch entity
 		me.createDragEntity();
-		
 		//set the callback property to force the visualization of the polyline during user interaction
-		me._getPositionsCallbackProperty = new Cesium.CallbackProperty(me._getPositionsCallbackFunction(me), false);
-		
-		
+		me._getPolylinePositionsCallbackProperty = new Cesium.CallbackProperty(me._getPolylinePositionsCallbackFunction(me), false);
+		me._getPolygonPositionsCallbackProperty = new Cesium.CallbackProperty(me._getPolygonPositionsCallbackFunction(me), false);
 		//register the mouse events
-		
 		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.requestVertexHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 			
@@ -85,80 +94,78 @@
 	},
 	
 	/**
-	 * @inheritdoc
+	 * create the scratch entity
 	*/
 	createDragEntity: function() {
 		var me = this;
 		//create entity polyline
-		me.getPolyline().show = false;
+		//me.getPolyline().show = false;
+		me.getPolygon().show = false;
+		var polygonGraphics = new Cesium.PolygonGraphics(me.getPolygon());
 		var entity = me.getDataSource().entities.add({
-			polyline : new Cesium.PolylineGraphics(me.getPolyline())
+			polyline : new Cesium.PolylineGraphics(me.getPolyline()),
+			polygon: polygonGraphics
 		});
 		me.setDragEntity(entity);
 		return entity;
 	},
 	
-	/**
-	* Method to return the Graphics for the linear entity
-	* @return {Cesium.PolylineGraphics}
-	*/
-	getLinearEntityGraphics: function() {
-		var me = this;
-		return me.getDragEntity().polyline;
-	},
-	
-	
 	requestVertexHandler: function(movement, context) {
 		var me = (context ? context : this);
-		
-		
+
 		if(me._numberOfInputVertices == 0) {
 			requestVertex(movement, context, me.getFirstVertexMessage());
 		}
 		else if(me._numberOfInputVertices == 1) {
 			requestVertex(movement, context, me.getSecondVertexMessage());
 		}
-		else if(me._numberOfInputVertices > 1) {
+		else if(me._numberOfInputVertices == 2) {
+			requestVertex(movement, context, me.getThirdVertexMessage());
+		}
+		else if(me._numberOfInputVertices > 2) {
 			requestVertex(movement, context, me.getNextVertexMessage());
 		}
 		
 		function requestVertex(movement, me, message) {
-			var ellipsoid = me.getViewer().scene.globe.ellipsoid;
 			me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
 			if (me._curCartesianPosition) {
-				//show tooltip message
 				me.showTooltip(movement.endPosition, message);
-				//add polyline vertex based on mouse position
+				//add polyline/polygon vertex based on mouse position
 				if(me._positions.length == me._numberOfInputVertices)
 					me._positions.push(me._curCartesianPosition);
-				
 			} else {
 				me.hideTooltip();
 			}
 		}
 	},
 	
+	/**
+	* Method called once the user left click to define a new vertex
+	*
+	* @private
+	*/
 	getVertexHandler: function(movement, context) {
 		var me = (context ? context : this);
-		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-		//var cartesian = me.getViewer().camera.pickEllipsoid(movement.position, ellipsoid);
 		var cartesian = me.getPositionFromMouse(movement.position);
 		if (cartesian) {
-			me.getDragEntity().polyline.positions =  me._getPositionsCallbackProperty;
+			me.getDragEntity().polyline.positions =  me._getPolylinePositionsCallbackProperty;
+			me.getDragEntity().polygon.hierarchy =  me._getPolygonPositionsCallbackProperty;
 			me._positions.pop();
 			me._positions.push(cartesian);
 			me._numberOfInputVertices += 1;
 			me.getDragEntity().polyline.show = true;
+			me.getDragEntity().polygon.show = true;
 		}
 	},
 	
 	endInputHandler: function(movement, context) {
 		var me = (context ? context : this);
-		if(me._numberOfInputVertices < 2) return;
+		if(me._numberOfInputVertices <= 2) return;
 		me._positions.pop();
 		me._numberOfInputVertices -= 1;
 		me.getDragEntity().polyline.positions =  me._positions;
-		var data = me.getDragEntity().polyline.clone();
+		me.getDragEntity().polygon.hierarchy =  new Cesium.PolygonHierarchy(me._positions);
+		var data = me.getDragEntity().polygon.clone();
 		//cleanup
 		me.cleanup();
 		//fire event

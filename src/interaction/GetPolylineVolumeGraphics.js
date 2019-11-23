@@ -16,7 +16,9 @@
 
 
 /**
- * Class to draw an Cesium Entity Polyline through user interaction 
+ * Class used to get the Cesium PolylineVolumeGraphics
+ * through user interaction.
+ *
  * @class CesiumExt.interaction.DrawPolyline
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */

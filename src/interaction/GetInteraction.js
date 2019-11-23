@@ -65,7 +65,7 @@
 	 * @return {Cesium.Entity} the newly created entity
 	*/
 	createDragEntity: function() {
-		Ext.raise('CesiumExt.interaction.GetInteraction.createEntity() must be implemented');
+		Ext.raise('CesiumExt.interaction.GetInteraction.createDragEntity() must be implemented');
 	},
 	
 	/**

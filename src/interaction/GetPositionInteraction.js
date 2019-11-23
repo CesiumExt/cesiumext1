@@ -27,23 +27,10 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 	
 	config: {
 		viewer: null,
-		message: 'Pick Point to retrieve Coordinate or <esc> to cancel',
-		showCartographicCoordinate: false,
-		label : {
-            show : false,
-            showBackground : true,
-            //font : '14px monospace',
-			//font : '10px monospace',
-			font : '14px Helvetica',
-            fillColor : Cesium.Color.YELLOW,
-            horizontalOrigin : Cesium.HorizontalOrigin.LEFT,
-            verticalOrigin : Cesium.VerticalOrigin.TOP,
-            pixelOffset : new Cesium.Cartesian2(15, 0),
-			disableDepthTestDistance: Number.POSITIVE_INFINITY
-        }
+		message: 'Pick Point to retrieve Coordinate or &lt;esc&gt; to cancel',
 	},
 	
-	_entityLabel : null,
+	_curCartesianPosition: new Cesium.Cartesian3(),
 	
 	/**
 	* @param {Object} The configuration object for this Interaction.
@@ -52,25 +39,9 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 	constructor: function(config) {
 		var me = this;
         config = config || {};
-		if(!config.viewer)
-			config.viewer = me.config.viewer;
-		else
-			me.config.viewer = config.viewer;
-		if(!config.message)
-			config.message = me.config.message;
-		if(!config.showCartographicCoordinate)
-			config.showCartographicCoordinate = me.config.showCartographicCoordinate;
-		if(!config.label)
-			config.label = me.config.label;
-		config.label.show = false;
-		
 		me.callParent([config]);
+		me.initConfig(config);
 		
-		//create entity label
-		me.label.show = false;
-		me._entityLabel = me.viewer.entities.add({
-			label : me.label
-		});
 		//register screen space event handlers
 		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.mouseMoveHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE);
@@ -86,21 +57,20 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 	*/
 	mouseMoveHandler: function(movement, context) {
 		var me = (context ? context : this);
-        var cartesian = me.viewer.camera.pickEllipsoid(movement.endPosition, me.viewer.scene.globe.ellipsoid);
-        if (cartesian) {
-            var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-            var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(2);
-            var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(2);
-
-            me._entityLabel.position = cartesian;
-            me._entityLabel.label.show = true;
+		me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
+        if (me._curCartesianPosition) {
+            var cartographic = Cesium.Cartographic.fromCartesian(me._curCartesianPosition);
+            var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(4);
+            var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(4);
 			
-			var longitude = longitudeString.slice(-7) + '\u00B0';
-			var latitude = latitudeString.slice(-7) + '\u00B0'
-			var msg = '{0}\nLon: {1}\nLat: {2}';
-			me._entityLabel.label.text = Ext.String.format(msg, me.message, longitude, latitude);
+			var longitude = longitudeString.slice(-9) + '\u00B0';
+			var latitude = latitudeString.slice(-9) + '\u00B0'
+			var msgTemplate = '{0}\nLon: {1}\nLat: {2}';
+			var msg = Ext.String.format(msgTemplate, me.message, longitude, latitude);
+			me.showTooltip(movement.endPosition, msg);
+			
         } else {
-            me._entityLabel.label.show = false;
+            me.hideTooltip();
         }
 	},
 	
@@ -133,10 +103,6 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 		//remove label
 		var me = this;
 		me.callParent(arguments);
-		if (me._entityLabel) {
-			me.viewer.entities.remove(me._entityLabel);
-			me._entityLabel = null;
-		}
 	},
 	
 	 /**

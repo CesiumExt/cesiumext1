@@ -27,23 +27,11 @@
     extend: 'CesiumExt.interaction.Interaction',
 	
 	config: {
-		firstCornerMessage: '<Shift> + Click to select the first corner or <esc> to cancel',
+		firstCornerMessage: '&lt;CTRL&gt; + Click to select the first corner or &lt;esc&gt; to cancel',
 		secondCornerMessage: 'Drag to second corner',
-		label : {
-            show : false,
-            showBackground : true,
-			font : '14px Helvetica',
-            fillColor : Cesium.Color.YELLOW,
-            horizontalOrigin : Cesium.HorizontalOrigin.LEFT,
-            verticalOrigin : Cesium.VerticalOrigin.TOP,
-            pixelOffset : new Cesium.Cartesian2(15, 0),
-			//heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-			disableDepthTestDistance: Number.POSITIVE_INFINITY
-        },
 		rectangle : {
 			material : Cesium.Color.RED.withAlpha(0.5),
 		}
-		
 	},
 	
 	_entityLabel: null,
@@ -85,11 +73,6 @@
 		me.callParent([config]);
 		me.initConfig(config);
 		
-		//create entity label to show the message
-		me.getLabel().show = false;
-		me._entityLabel = me.viewer.entities.add({
-			label : me.getLabel()
-		});
 		//create entity rectangle
 		//me.getRectangle().coordinates = me.getSelectorLocation;
 		me.getRectangle().show = false;
@@ -101,24 +84,23 @@
 		me.getBoxRectangleCallbackProperty = new Cesium.CallbackProperty(me.getBoxRectangleCallbackFunction(me), false);
 		
 		//register event handler for mouse interaction
-		
 		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.requestFirstCornerHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 			
-		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.startClickShiftHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.startClickCtrlHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_DOWN,
-			Cesium.KeyboardEventModifier.SHIFT);
+			Cesium.KeyboardEventModifier.CTRL);
 			
 		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.drawSelector(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE,
-			Cesium.KeyboardEventModifier.SHIFT);
+			Cesium.KeyboardEventModifier.CTRL);
 			
-		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endClickShiftHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endClickCtrlHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_UP);
 			
-		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endClickShiftHandler(movement, me);}, 
+		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.endClickCtrlHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.LEFT_UP,
-			Cesium.KeyboardEventModifier.SHIFT);
+			Cesium.KeyboardEventModifier.CTRL);
 	},
 	
 	/**
@@ -130,15 +112,11 @@
 	requestFirstCornerHandler: function(movement, context) {
 		var me = (context ? context : this);
 		me.getViewer().scene.screenSpaceCameraController.enableInputs  = false;
-		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-        //me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition, ellipsoid, me._curCartesianPosition);
 		me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
         if (me._curCartesianPosition) {
-            me._entityLabel.position = me._curCartesianPosition;
-            me._entityLabel.label.show = true;
-            me._entityLabel.label.text = me.getFirstCornerMessage();
+			me.showTooltip(movement.endPosition, me.getFirstCornerMessage());
         } else {
-            me._entityLabel.label.show = false;
+             me.hideTooltip();
         }
 	},
 	
@@ -148,10 +126,9 @@
 	*
 	* @private
 	*/
-	startClickShiftHandler: function(movement, context) {
+	startClickCtrlHandler: function(movement, context) {
 		var me = (context ? context : this);
 		me._mouseDown = true;
-		//me._entityRectangle.rectangle.coordinates = getSelectorLocation;
 		me._entityRectangle.rectangle.coordinates =  me.getBoxRectangleCallbackProperty;
 	},
 	
@@ -167,14 +144,11 @@
 		if (!me._mouseDown) {
 			return;
 		}
-		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-		//me._curCartesianPosition = me.getViewer().camera.pickEllipsoid(movement.endPosition, ellipsoid, me._curCartesianPosition);
 		me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
-
 		if (me._curCartesianPosition) {
+			var ellipsoid = me.getViewer().scene.globe.ellipsoid;
 			//show message requesting second corner in the current mouse position
-			me._entityLabel.position = me._curCartesianPosition;
-			me._entityLabel.label.text = me.getSecondCornerMessage();
+			me.showTooltip(movement.endPosition, me.getSecondCornerMessage());
 			//
 			me._curCartographicPosition = Cesium.Cartographic.fromCartesian(me._curCartesianPosition,
 					ellipsoid, me._curCartographicPosition);
@@ -194,6 +168,9 @@
 				me._entityRectangle.rectangle.show = true;
 			}
 		}
+		else {
+			 me.hideTooltip();
+		}
 	},
 	
 	/**
@@ -203,7 +180,7 @@
 	*
 	* @private
 	*/
-	endClickShiftHandler: function(movement, context) {
+	endClickCtrlHandler: function(movement, context) {
 		var me = (context ? context : this);
 		me._entityRectangle.rectangle.coordinates = me._rectangleSelector;
 		var data = me._entityRectangle.rectangle.coordinates.getValue().clone();
@@ -228,12 +205,6 @@
 		me._curCartesianPosition = new Cesium.Cartesian3();
 		me._curCartographicPosition = new Cesium.Cartographic();
 		me._firstPoint = new Cesium.Cartographic();
-		
-		//remove label
-		if (me._entityLabel) {
-			me.getViewer().entities.remove(me._entityLabel);
-			me._entityLabel = null;
-		}
 		//remove rectangle
 		if (me._entityRectangle) {
 			me.getViewer().entities.remove(me._entityRectangle);

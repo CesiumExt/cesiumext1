@@ -152,9 +152,14 @@ Ext.application({
 						{
 							text : 'Draw Pipe',
 							handler: drawPipe
+						},
+						{
+							text : 'Draw Polygon',
+							handler: drawPolygon
 						}
 					]
 				},
+				
 				
 				
 						
@@ -221,6 +226,25 @@ Ext.application({
         });
 		
 		/////////// Utility functions ////////////////////////////////////////////////////////////////
+		
+		function drawPolygon() {
+			var viewer = mapComponent.getViewer();
+			//create GetPolygonGraphics Interaction
+			var getPolygonGraphicsInteraction = Ext.create('CesiumExt.interaction.GetPolygonGraphics',
+			{
+				viewer: viewer
+			});
+			getPolygonGraphicsInteraction.on('drawend', drawPolygonHandler);
+			
+			function drawPolygonHandler(polygonGraphics) {
+				polygonGraphics.material = Cesium.Color.BLUE.withAlpha(0.3);
+				var entity = viewer.entities.add({
+					polygon: polygonGraphics
+				});
+				getPolygonGraphicsInteraction.un('drawend', drawPolygonHandler);
+			}
+		}
+		
 		function drawPipe() {
 			var viewer = mapComponent.getViewer();
 			var polylineVolume = {

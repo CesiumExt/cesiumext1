@@ -87,11 +87,8 @@ Ext.define('CesiumExt.map.Map', {
     constructor: function(config) {
         var me = this;
         me.callParent([config]);
-		me.setHtml('<div id="cesiumContainer"></div>');
+		me.setHtml('<div id="cesiumContainer"></div><div id="cesiumTooltip"></div>');
         me.on('resize', me.onResize, me);
-		
-		//me.viewer = new Cesium.Viewer('cesiumContainer', me.getViewerConfig());
-        //me.viewerRendered = true;
     },
 
     /**
