@@ -25,7 +25,7 @@
 Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 	extend: 'Ext.Base',
 	requires: [
-        'CesiumExt.interaction.GetPositionInteraction'
+        'CesiumExt.interaction.GetPosition'
     ],
 	
 	config: {
@@ -56,7 +56,7 @@ Ext.define('CesiumExt.featureInfo.ImageryLayerFeatureInfo', {
 	{
 		var me = this;
 		//create interaction to get position
-		var getPosInteraction = Ext.create('CesiumExt.interaction.GetPositionInteraction',
+		var getPosInteraction = Ext.create('CesiumExt.interaction.GetPosition',
 		{
 			viewer: me.getViewer(),
 			message: me.getMessage()

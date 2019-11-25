@@ -159,10 +159,20 @@ Ext.application({
 						}
 					]
 				},
-				
-				
-				
-						
+				{
+					text : 'Tools',
+					menu : 
+					[ 
+						{
+							text : 'Get Position',
+							handler: getPosition
+						},
+						{
+							text : 'Get Distance',
+							handler: getDistance
+						},
+					]
+				},		
 			]
 		});
 		
@@ -879,6 +889,116 @@ Ext.application({
 			tabPanel.add(dataSourceGridPanel).show();
 			tabPanel.setActiveTab(dataSourceGridPanel);
 		}
-		//
+		//Menu Tools 
+		function getDistance() {
+			var viewer = mapComponent.getViewer();
+			//create GetPosition Interaction
+			var getDistInteraction = Ext.create('CesiumExt.interaction.GetDistance',
+			{
+				viewer: viewer
+			});
+			
+			getDistInteraction.on('drawend', showDistance);
+			
+			function showDistance(distance) {
+				getDistInteraction.un('drawend', showDistance);
+				showDistanceWindow(distance);
+			}
+			
+			function showDistanceWindow(distance)
+			{
+				var panel = Ext.create('Ext.form.Panel', {
+					width: 300,
+					bodyPadding: 10,
+					items: [
+						{
+							xtype: 'numberfield',
+							value: distance,
+							width: 500,
+							fieldLabel: 'Distance ',
+							hideTrigger:true,
+						}, 
+					]
+				});
+				
+				var popupWindow = Ext.create('Ext.window.Window', {
+					title: 'Show Distance',
+					height: 200,
+					width: 500,
+					scrollable: true,
+					constrainHeader: true,
+					layout: 'fit',
+					items: [panel]
+				});
+				popupWindow.show();
+			}
+		}
+		
+		function getPosition() {
+			var viewer = mapComponent.getViewer();
+			//create GetPosition Interaction
+			var getPosInteraction = Ext.create('CesiumExt.interaction.GetPosition',
+			{
+				viewer: viewer
+			});
+			
+			getPosInteraction.on('positionRetrieved', showPosition);
+			
+			function showPosition(data) {
+				getPosInteraction.un('positionRetrieved', showPosition);
+				showCoordinateWindow(data.cartesianPosition, data.cartographicPosition, data.windowPosition);
+			}
+			
+			function showCoordinateWindow(cartesianPos, cartographicPos, windowPos)
+			{
+				var panel = Ext.create('Ext.form.Panel', {
+					width: 300,
+					bodyPadding: 10,
+					items: [
+						{
+							xtype: 'textfield',
+							itemId: 'cartesianField',
+							name: 'Cartesian',
+							value: cartesianPos.x + ',' + cartesianPos.y,
+							width: 500,
+							fieldLabel: 'Cartesian ',
+							hideTrigger:true,
+						}, 
+						{
+							xtype: 'textfield',
+							itemId: 'cartographicField',
+							name: 'cartographic',
+							value: Cesium.Math.toDegrees(cartographicPos.latitude) + ',' + Cesium.Math.toDegrees(cartographicPos.longitude),
+							width: 500,
+							fieldLabel: 'Lat/Long ',
+							hideTrigger:true,
+							allowBlank: false  // requires a non-empty value
+						}, 
+						{
+							xtype: 'textfield',
+							itemId: 'windowField',
+							name: 'Window',
+							value: windowPos.x + ',' + windowPos.y,
+							width: 500,
+							fieldLabel: 'Window ',
+							hideTrigger:true,
+							allowBlank: false  // requires a non-empty value
+						}, 
+						
+					]
+				});
+				
+				var popupWindow = Ext.create('Ext.window.Window', {
+					title: 'Show Coordinate',
+					height: 200,
+					width: 600,
+					scrollable: true,
+					constrainHeader: true,
+					layout: 'fit',
+					items: [panel]
+				});
+				popupWindow.show();
+			}
+		}
     }
 });

@@ -19,10 +19,10 @@
  * Class used to retrieve the coordinate position from the user.
  * The coordinate retrieved is the mouse position where the user clicked
  * in the canvas
- * @class CesiumExt.interaction.GetPositionInteraction
+ * @class CesiumExt.interaction.GetPosition
  * @author Paulo Sergio SAMPAIO de ARAGAO
  */
-Ext.define('CesiumExt.interaction.GetPositionInteraction', {
+Ext.define('CesiumExt.interaction.GetPosition', {
     extend: 'CesiumExt.interaction.Interaction',
 	
 	config: {
@@ -66,7 +66,8 @@ Ext.define('CesiumExt.interaction.GetPositionInteraction', {
 			var longitude = longitudeString.slice(-9) + '\u00B0';
 			var latitude = latitudeString.slice(-9) + '\u00B0'
 			var msgTemplate = '{0}\nLon: {1}\nLat: {2}';
-			var msg = Ext.String.format(msgTemplate, me.message, longitude, latitude);
+			var msgTemplate = '{0}\nLat\\Long: {1}, {2}';
+			var msg = Ext.String.format(msgTemplate, me.getMessage(), latitude, longitude);
 			me.showTooltip(movement.endPosition, msg);
 			
         } else {

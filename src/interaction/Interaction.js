@@ -69,7 +69,8 @@ Ext.define('CesiumExt.interaction.Interaction', {
 				'border-radius: 4px;' + 
 				'padding: 4px 8px;' +
 				'opacity: 0.7;' +
-				'white-space:nowrap;' +
+				//'white-space:nowrap;' +
+				'white-space: pre-wrap;' +
 				'position:absolute;' +
 				'left:{0}px;' +
 				'top:{1}px"' + 

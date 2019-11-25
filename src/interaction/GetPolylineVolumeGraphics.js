@@ -63,8 +63,9 @@
 	endInputHandler: function(movement, context) {
 		var me = (context ? context : this);
 		if(me._numberOfInputVertices < 2) return;
-		me._positions.pop();
-		me._numberOfInputVertices -= 1;
+		if(me._numberOfInputVertices < me._positions.length) {
+			me._positions.pop();
+		}
 		me.getDragEntity().polyline.positions =  me._positions;
 		var polylineVolume = new Cesium.PolylineVolumeGraphics(me.getPolylineVolume());
 		polylineVolume.positions = me._positions;

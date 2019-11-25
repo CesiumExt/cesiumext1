@@ -47,7 +47,7 @@
 	
 	_numberOfInputVertices: 0,
 	
-	_getPositionsCallbackProperty: null,
+	_getPolylinePositionsCallbackProperty: null,
 	
 	_getPolygonPositionsCallbackProperty: null,
 	
@@ -73,6 +73,10 @@
 		me.initConfig(config);
 		
 		me._positions = []; //<-- shoud be specified. bug??
+		me._curCartesianPosition = new Cesium.Cartesian3();
+		me._numberOfInputVertices = 0;
+		me._getPolygonPositionsCallbackProperty = null;
+		me._getPolylinePositionsCallbackProperty = null;
 		
 		//disable zoom/pan, etc.
 		//me.getViewer().scene.screenSpaceCameraController.enableInputs  = false;
@@ -99,7 +103,7 @@
 	createDragEntity: function() {
 		var me = this;
 		//create entity polyline
-		//me.getPolyline().show = false;
+		me.getPolyline().show = false;
 		me.getPolygon().show = false;
 		var polygonGraphics = new Cesium.PolygonGraphics(me.getPolygon());
 		var entity = me.getDataSource().entities.add({
@@ -158,11 +162,19 @@
 		}
 	},
 	
+	
+	/**
+	* Method called once the user right click to finish the operation
+	*
+	* @private
+	*/
 	endInputHandler: function(movement, context) {
 		var me = (context ? context : this);
 		if(me._numberOfInputVertices <= 2) return;
-		me._positions.pop();
-		me._numberOfInputVertices -= 1;
+		if(me._numberOfInputVertices < me._positions.length) {
+			me._positions.pop();
+			//me._numberOfInputVertices -= 1;
+		}
 		me.getDragEntity().polyline.positions =  me._positions;
 		me.getDragEntity().polygon.hierarchy =  new Cesium.PolygonHierarchy(me._positions);
 		var data = me.getDragEntity().polygon.clone();
@@ -182,7 +194,8 @@
 		me._curCartesianPosition = new Cesium.Cartesian3();
 		me._positions = [];
 		me._numberOfInputVertices = 0;
-		me._getPositionsCallbackProperty = null;
+		me._getPolylinePositionsCallbackProperty = null;
+		me._getPolygonPositionsCallbackProperty = null;
 		
 		me.callParent(arguments);
 	},

@@ -38,7 +38,17 @@
 	
 	_curCartesianPosition: new Cesium.Cartesian3(),
 	
+	_ellipsoidGeodesic: null,
+	
+	_ellipsoid: null,
+	
+	_startCartographicPosition: new Cesium.Cartographic(),
+	
+	_endCartographicPosition: new Cesium.Cartographic(),
+	
 	_positions: [],
+	
+	_distances: [],
 	
 	_numberOfInputVertices: 0,
 	
@@ -61,6 +71,9 @@
 		me.initConfig(config);
 		
 		me._positions = []; //<-- shoud be specified. bug??
+		me._distances = [];
+		me._ellipsoid =  me.getViewer().scene.globe.ellipsoid;
+		me._ellipsoidGeodesic = new Cesium.EllipsoidGeodesic(me._startCartographicPosition, me._endCartographicPosition, me._ellipsoid);
 		
 		//disable zoom/pan, etc.
 		//me.getViewer().scene.screenSpaceCameraController.enableInputs  = false;
@@ -71,9 +84,7 @@
 		//set the callback property to force the visualization of the polyline during user interaction
 		me._getPositionsCallbackProperty = new Cesium.CallbackProperty(me._getPositionsCallbackFunction(me), false);
 		
-		
 		//register the mouse events
-		
 		me.getScreenSpaceEventHandler().setInputAction(function(movement) {me.requestVertexHandler(movement, me);}, 
 			Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 			
@@ -107,11 +118,27 @@
 		return me.getDragEntity().polyline;
 	},
 	
+	calculateTotalDistance: function() {
+		var me = this;
+		var distance = 0;
+		var len = me._positions.length;
+		if(len >= 2) {
+			for(var i = 1; i < len; ++i) {
+				me._startCartographicPosition = Cesium.Cartographic.fromCartesian(me._positions[i - 1],
+					me._ellipsoid, me._startCartographicPosition);
+				me._endCartographicPosition = Cesium.Cartographic.fromCartesian(me._positions[i],
+					me._ellipsoid, me._endCartographicPosition);
+				me._ellipsoidGeodesic.setEndPoints(me._startCartographicPosition, me._endCartographicPosition);
+				distance += me._ellipsoidGeodesic.surfaceDistance;
+			}
+		}
+		return distance;
+	},
+	
 	
 	requestVertexHandler: function(movement, context) {
 		var me = (context ? context : this);
-		
-		
+
 		if(me._numberOfInputVertices == 0) {
 			requestVertex(movement, context, me.getFirstVertexMessage());
 		}
@@ -123,14 +150,19 @@
 		}
 		
 		function requestVertex(movement, me, message) {
-			var ellipsoid = me.getViewer().scene.globe.ellipsoid;
+			var dist = 0;
 			me._curCartesianPosition = me.getPositionFromMouse(movement.endPosition, me._curCartesianPosition);
 			if (me._curCartesianPosition) {
-				//show tooltip message
-				me.showTooltip(movement.endPosition, message);
 				//add polyline vertex based on mouse position
-				if(me._positions.length == me._numberOfInputVertices)
+				if(me._positions.length == me._numberOfInputVertices) {
 					me._positions.push(me._curCartesianPosition);
+				}
+				//dist = me.calculateTotalDistance();
+				strDist = Ext.util.Format.number(me.calculateTotalDistance(), '0.000')
+				var msgTemplate = '{0}\nDistance: {1}m';
+				var msg = Ext.String.format(msgTemplate, message, strDist);
+				//show tooltip message
+				me.showTooltip(movement.endPosition, msg);
 				
 			} else {
 				me.hideTooltip();
@@ -140,8 +172,6 @@
 	
 	getVertexHandler: function(movement, context) {
 		var me = (context ? context : this);
-		var ellipsoid = me.getViewer().scene.globe.ellipsoid;
-		//var cartesian = me.getViewer().camera.pickEllipsoid(movement.position, ellipsoid);
 		var cartesian = me.getPositionFromMouse(movement.position);
 		if (cartesian) {
 			me.getDragEntity().polyline.positions =  me._getPositionsCallbackProperty;
@@ -155,8 +185,9 @@
 	endInputHandler: function(movement, context) {
 		var me = (context ? context : this);
 		if(me._numberOfInputVertices < 2) return;
-		me._positions.pop();
-		me._numberOfInputVertices -= 1;
+		if(me._numberOfInputVertices < me._positions.length) {
+			me._positions.pop();
+		}
 		me.getDragEntity().polyline.positions =  me._positions;
 		var data = me.getDragEntity().polyline.clone();
 		//cleanup
